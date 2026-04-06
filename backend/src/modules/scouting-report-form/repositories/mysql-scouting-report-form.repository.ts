@@ -15,10 +15,7 @@ interface ReportRow extends DatabaseRow {
 }
 
 interface OpponentFormRow extends DatabaseRow {
-  league_position: number | null;
-  points: number | null;
   summary: string | null;
-  notes: string | null;
 }
 
 export class MysqlScoutingReportFormRepository implements ScoutingReportFormRepository {
@@ -54,10 +51,7 @@ export class MysqlScoutingReportFormRepository implements ScoutingReportFormRepo
     const [rows] = await this.databasePool.execute<OpponentFormRow[]>(
       `
         SELECT
-          ofm.league_position,
-          ofm.points,
-          ofm.summary,
-          ofm.notes
+          ofm.summary
         FROM opponent_forms ofm
         WHERE ofm.scouting_report_id = ?
       `,
@@ -77,25 +71,13 @@ export class MysqlScoutingReportFormRepository implements ScoutingReportFormRepo
       `
         INSERT INTO opponent_forms (
           scouting_report_id,
-          league_position,
-          points,
-          summary,
-          notes
-        ) VALUES (?, ?, ?, ?, ?)
+          summary
+        ) VALUES (?, ?)
         ON DUPLICATE KEY UPDATE
-          league_position = VALUES(league_position),
-          points = VALUES(points),
           summary = VALUES(summary),
-          notes = VALUES(notes),
           updated_at = CURRENT_TIMESTAMP(3)
       `,
-      [
-        reportId,
-        form.leaguePosition,
-        form.points,
-        form.recentFormText,
-        form.notes,
-      ],
+      [reportId, serializeFormSummary(form)],
     );
 
     const savedForm = await this.findFormByReportId(reportId);
@@ -109,10 +91,71 @@ export class MysqlScoutingReportFormRepository implements ScoutingReportFormRepo
 }
 
 function mapOpponentFormRow(row: OpponentFormRow): OpponentFormRecord {
+  const parsedSummary = parseFormSummary(row.summary);
+
   return {
-    leaguePosition: row.league_position,
-    points: row.points,
-    recentFormText: row.summary,
-    notes: row.notes,
+    leaguePosition: parsedSummary.leaguePosition,
+    points: parsedSummary.points,
+    recentFormText: parsedSummary.recentFormText,
+    notes: parsedSummary.notes,
+  };
+}
+
+function serializeFormSummary(form: OpponentFormRecord): string | null {
+  const payload = {
+    leaguePosition: form.leaguePosition,
+    points: form.points,
+    recentFormText: form.recentFormText,
+    notes: form.notes,
+  };
+
+  if (
+    payload.leaguePosition === null &&
+    payload.points === null &&
+    payload.recentFormText === null &&
+    payload.notes === null
+  ) {
+    return null;
+  }
+
+  return JSON.stringify(payload);
+}
+
+function parseFormSummary(summary: string | null): OpponentFormRecord {
+  if (summary === null) {
+    return createEmptyForm();
+  }
+
+  try {
+    const parsedValue = JSON.parse(summary) as Partial<OpponentFormRecord>;
+
+    return {
+      leaguePosition:
+        typeof parsedValue.leaguePosition === 'number'
+          ? parsedValue.leaguePosition
+          : null,
+      points: typeof parsedValue.points === 'number' ? parsedValue.points : null,
+      recentFormText:
+        typeof parsedValue.recentFormText === 'string'
+          ? parsedValue.recentFormText
+          : null,
+      notes: typeof parsedValue.notes === 'string' ? parsedValue.notes : null,
+    };
+  } catch {
+    return {
+      leaguePosition: null,
+      points: null,
+      recentFormText: summary,
+      notes: null,
+    };
+  }
+}
+
+function createEmptyForm(): OpponentFormRecord {
+  return {
+    leaguePosition: null,
+    points: null,
+    recentFormText: null,
+    notes: null,
   };
 }

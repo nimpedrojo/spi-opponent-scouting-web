@@ -68,7 +68,7 @@ export function ReportEditorPage(): JSX.Element {
       );
     } catch (error) {
       setDuplicateErrorMessage(
-        getErrorMessage(error, 'Unable to duplicate report.'),
+        getErrorMessage(error, 'No se pudo duplicar el informe.'),
       );
     }
   }
@@ -76,9 +76,9 @@ export function ReportEditorPage(): JSX.Element {
   return (
     <section className="page">
       <PageHeader
-        eyebrow="Report Workflow"
-        title="Report Editor"
-        description="Section-based scouting workflow with clear report context, lifecycle visibility, and focused editing areas."
+        eyebrow="Flujo del informe"
+        title="Editor de informes"
+        description="Flujo de scouting por secciones con contexto claro del informe, visibilidad del ciclo de vida y areas de edicion enfocadas."
       />
 
       <ReportEditorHeader

@@ -36,21 +36,21 @@ export function ReportsFilters({
     <section className="panel">
       <div className="panel__header">
         <div>
-          <span className="page-header__eyebrow">Report Filters</span>
-          <h3>Track draft and published reports clearly</h3>
+          <span className="page-header__eyebrow">Filtros de informes</span>
+          <h3>Sigue con claridad informes en borrador y publicados</h3>
         </div>
         <button
           type="button"
           className="button button--ghost"
           onClick={onReset}
         >
-          Reset filters
+          Limpiar filtros
         </button>
       </div>
 
       <div className="filter-grid">
         <label className="field">
-          <span className="field__label">Opponent</span>
+          <span className="field__label">Rival</span>
           <select
             value={filters.opponentId ?? ''}
             onChange={(event) =>
@@ -62,7 +62,7 @@ export function ReportsFilters({
               )
             }
           >
-            <option value="">All opponents</option>
+            <option value="">Todos los rivales</option>
             {opponents.map((opponent) => (
               <option key={opponent.id} value={opponent.id}>
                 {opponent.name}
@@ -72,7 +72,7 @@ export function ReportsFilters({
         </label>
 
         <label className="field">
-          <span className="field__label">Status</span>
+          <span className="field__label">Estado</span>
           <select
             value={filters.status ?? ''}
             onChange={(event) =>
@@ -85,14 +85,14 @@ export function ReportsFilters({
               )
             }
           >
-            <option value="">All statuses</option>
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
+            <option value="">Todos los estados</option>
+            <option value="draft">Borrador</option>
+            <option value="published">Publicado</option>
           </select>
         </label>
 
         <label className="field">
-          <span className="field__label">Season</span>
+          <span className="field__label">Temporada</span>
           <input
             type="number"
             min="2000"

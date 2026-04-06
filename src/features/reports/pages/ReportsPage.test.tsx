@@ -58,11 +58,11 @@ describe('ReportsPage', () => {
     const user = userEvent.setup();
 
     const createReportPanel = screen
-      .getByRole('heading', { name: 'Start a new scouting draft' })
+      .getByRole('heading', { name: 'Inicia un nuevo borrador de scouting' })
       .closest('section');
 
     if (createReportPanel === null) {
-      throw new Error('Create report panel was not found');
+      throw new Error('No se encontro el panel de crear informe');
     }
 
     await within(createReportPanel).findByRole('option', {
@@ -70,10 +70,10 @@ describe('ReportsPage', () => {
     });
 
     await user.selectOptions(
-      within(createReportPanel).getByLabelText('Opponent'),
+      within(createReportPanel).getByLabelText('Rival'),
       '7',
     );
-    await user.click(screen.getByRole('button', { name: 'Create report' }));
+    await user.click(screen.getByRole('button', { name: 'Crear informe' }));
 
     await screen.findByText('/report-editor?reportId=21&opponentId=7');
   });
@@ -132,11 +132,11 @@ describe('ReportsPage', () => {
 
     const user = userEvent.setup();
 
-    await screen.findByRole('button', { name: 'Publish' });
-    await user.click(screen.getByRole('button', { name: 'Publish' }));
+    await screen.findByRole('button', { name: 'Publicar' });
+    await user.click(screen.getByRole('button', { name: 'Publicar' }));
 
     await waitFor(() => {
-      expect(screen.getAllByText('published').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Publicado').length).toBeGreaterThan(0);
     });
   });
 });

@@ -28,23 +28,24 @@ const swotTypeSections: Array<{
 }> = [
   {
     type: 'strength',
-    label: 'Strengths',
-    description: 'What gives the opponent an advantage.',
+    label: 'Fortalezas',
+    description: 'Lo que le da ventaja al rival.',
   },
   {
     type: 'weakness',
-    label: 'Weaknesses',
-    description: 'Where the opponent can be targeted.',
+    label: 'Debilidades',
+    description: 'Donde se puede atacar al rival.',
   },
   {
     type: 'opportunity',
-    label: 'Opportunities',
-    description: 'Situations we can exploit in match preparation.',
+    label: 'Oportunidades',
+    description:
+      'Situaciones que podemos explotar en la preparacion del partido.',
   },
   {
     type: 'threat',
-    label: 'Threats',
-    description: 'Risks that need a response plan.',
+    label: 'Amenazas',
+    description: 'Riesgos que necesitan un plan de respuesta.',
   },
 ];
 
@@ -69,8 +70,8 @@ export function ReportSwotEditor({
     return (
       <section className="panel">
         <div className="empty-state">
-          <h3>No report selected</h3>
-          <p>Open a report first to edit SWOT analysis.</p>
+          <h3>No hay ningun informe seleccionado</h3>
+          <p>Abre primero un informe para editar el analisis SWOT.</p>
         </div>
       </section>
     );
@@ -96,7 +97,7 @@ export function ReportSwotEditor({
       <div className="panel__header">
         <div>
           <span className="page-header__eyebrow">SWOT</span>
-          <h3>Grouped by tactical meaning</h3>
+          <h3>Agrupado por significado tactico</h3>
         </div>
         <div className="status-strip">
           <span
@@ -104,13 +105,13 @@ export function ReportSwotEditor({
               isReadOnly ? 'status-pill status-pill--published' : 'status-pill'
             }
           >
-            {isReadOnly ? 'Read-only' : 'Editable draft'}
+            {isReadOnly ? 'Solo lectura' : 'Borrador editable'}
           </span>
         </div>
       </div>
 
       {swotQuery.isLoading ? (
-        <p className="muted-text">Loading SWOT...</p>
+        <p className="muted-text">Cargando SWOT...</p>
       ) : null}
 
       <div className="stack">
@@ -127,7 +128,7 @@ export function ReportSwotEditor({
                   className="button button--ghost"
                   onClick={() => addItem(section.type)}
                 >
-                  Add item
+                  Agregar item
                 </button>
               ) : null}
             </div>
@@ -140,11 +141,11 @@ export function ReportSwotEditor({
                 >
                   <div className="editor-form-grid">
                     <label className="field field--span-wide">
-                      <span className="field__label">Description</span>
+                      <span className="field__label">Descripcion</span>
                       <textarea
                         value={item.description}
                         rows={3}
-                        placeholder={`Add a ${section.type} item.`}
+                        placeholder={`Agrega un item de ${section.label.toLowerCase()}.`}
                         disabled={isReadOnly}
                         onChange={(event) =>
                           updateItem(
@@ -158,7 +159,7 @@ export function ReportSwotEditor({
                     </label>
 
                     <label className="field">
-                      <span className="field__label">Priority</span>
+                      <span className="field__label">Prioridad</span>
                       <input
                         value={item.priority}
                         type="number"
@@ -185,7 +186,7 @@ export function ReportSwotEditor({
                         onClick={() => removeItem(section.type, index)}
                         disabled={groups[section.type].length === 1}
                       >
-                        Remove item
+                        Eliminar item
                       </button>
                     </div>
                   ) : null}
@@ -196,8 +197,8 @@ export function ReportSwotEditor({
         ))}
 
         <p className="muted-text">
-          Keep items short and specific so the grouped SWOT remains easy to
-          review with staff.
+          Manten los items cortos y especificos para que el SWOT agrupado siga
+          siendo facil de revisar con el staff.
         </p>
 
         {swotQuery.error instanceof Error ? (
@@ -219,7 +220,7 @@ export function ReportSwotEditor({
             disabled={isReadOnly || replaceSwotMutation.isPending}
             onClick={() => void handleSave()}
           >
-            {replaceSwotMutation.isPending ? 'Saving...' : 'Save SWOT'}
+            {replaceSwotMutation.isPending ? 'Guardando...' : 'Guardar SWOT'}
           </button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import type { JSX } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
+import { getScoutingReportStatusLabel } from '../../../shared/api/domain-types';
 import { PageHeader } from '../../../shared/ui/PageHeader';
 import { useOpponentQuery } from '../../opponents/api/opponentsApi';
 import { useScoutingReportQuery } from '../../reports/api/reportsApi';
@@ -45,14 +46,14 @@ export function ReportPreviewPage(): JSX.Element {
   return (
     <section className="page preview-page">
       <PageHeader
-        eyebrow="Coach Review"
-        title="Report Preview"
-        description="Read-only scouting report layout for review, handoff, and publication checks."
+        eyebrow="Revision tecnica"
+        title="Vista previa del informe"
+        description="Disposicion de informe de scouting en solo lectura para revision, entrega y validacion antes de publicar."
       />
 
       {reportQuery.isLoading || opponentQuery.isLoading ? (
         <section className="panel">
-          <p className="muted-text">Loading report preview...</p>
+          <p className="muted-text">Cargando vista previa del informe...</p>
         </section>
       ) : null}
 
@@ -60,10 +61,10 @@ export function ReportPreviewPage(): JSX.Element {
         <section className="preview-hero panel">
           <div className="preview-hero__header">
             <div>
-              <span className="page-header__eyebrow">Scouting Report</span>
-              <h3>{opponent?.name ?? `Opponent #${report.opponentId}`}</h3>
+              <span className="page-header__eyebrow">Informe de scouting</span>
+              <h3>{opponent?.name ?? `Rival #${report.opponentId}`}</h3>
               <p className="muted-text">
-                {opponent?.competitionName ?? 'Competition pending'}
+                {opponent?.competitionName ?? 'Competicion pendiente'}
                 {opponent?.countryName !== null &&
                 opponent?.countryName !== undefined
                   ? ` • ${opponent.countryName}`
@@ -79,13 +80,13 @@ export function ReportPreviewPage(): JSX.Element {
                     : 'status-pill'
                 }
               >
-                {report.status}
+                {getScoutingReportStatusLabel(report.status)}
               </span>
               <span className="status-pill">
                 Version {report.versionNumber}
               </span>
               <span className="status-pill">
-                {report.reportDate ?? 'No report date'}
+                {report.reportDate ?? 'Sin fecha de informe'}
               </span>
             </div>
           </div>
@@ -93,10 +94,10 @@ export function ReportPreviewPage(): JSX.Element {
       ) : (
         <section className="panel">
           <div className="empty-state">
-            <h3>No report selected</h3>
+            <h3>No hay ningun informe seleccionado</h3>
             <p>
-              Open a report from the Reports page to review its read-only
-              preview.
+              Abre un informe desde la pantalla de Informes para revisar su
+              vista previa en solo lectura.
             </p>
           </div>
         </section>
@@ -107,23 +108,26 @@ export function ReportPreviewPage(): JSX.Element {
           <aside className="preview-toc panel">
             <div className="panel__header">
               <div>
-                <span className="page-header__eyebrow">Sections</span>
-                <h3>Report contents</h3>
+                <span className="page-header__eyebrow">Secciones</span>
+                <h3>Contenido del informe</h3>
               </div>
             </div>
 
-            <nav className="preview-toc__nav" aria-label="Preview sections">
+            <nav
+              className="preview-toc__nav"
+              aria-label="Secciones de la vista previa"
+            >
               <a className="preview-toc__link" href="#preview-form">
-                Form
+                Dinamica
               </a>
               <a className="preview-toc__link" href="#preview-systems">
-                Systems
+                Sistemas
               </a>
               <a
                 className="preview-toc__link"
                 href="#preview-tactical-analysis"
               >
-                Tactical Analysis
+                Analisis tactico
               </a>
               <a className="preview-toc__link" href="#preview-swot">
                 SWOT
@@ -135,8 +139,8 @@ export function ReportPreviewPage(): JSX.Element {
             <section id="preview-form" className="panel preview-section">
               <div className="panel__header">
                 <div>
-                  <span className="page-header__eyebrow">Form</span>
-                  <h3>Recent dynamics and context</h3>
+                  <span className="page-header__eyebrow">Dinamica</span>
+                  <h3>Dinamica reciente y contexto</h3>
                 </div>
               </div>
 
@@ -144,55 +148,57 @@ export function ReportPreviewPage(): JSX.Element {
                 <div className="preview-grid">
                   <article className="preview-metric">
                     <span className="page-header__eyebrow">
-                      League Position
+                      Posicion en liga
                     </span>
                     <strong>
-                      {formQuery.data.leaguePosition ?? 'Not set'}
+                      {formQuery.data.leaguePosition ?? 'Sin definir'}
                     </strong>
                   </article>
                   <article className="preview-metric">
-                    <span className="page-header__eyebrow">Points</span>
-                    <strong>{formQuery.data.points ?? 'Not set'}</strong>
+                    <span className="page-header__eyebrow">Puntos</span>
+                    <strong>{formQuery.data.points ?? 'Sin definir'}</strong>
                   </article>
                   <article className="preview-card preview-card--full">
                     <span className="page-header__eyebrow">
-                      Recent Form Text
+                      Resumen de dinamica reciente
                     </span>
                     <p>
                       {formQuery.data.recentFormText ??
-                        'No recent form summary yet.'}
+                        'Todavia no hay resumen de dinamica reciente.'}
                     </p>
                   </article>
                   <article className="preview-card preview-card--full">
-                    <span className="page-header__eyebrow">Notes</span>
-                    <p>{formQuery.data.notes ?? 'No notes added yet.'}</p>
+                    <span className="page-header__eyebrow">Notas</span>
+                    <p>{formQuery.data.notes ?? 'Todavia no hay notas.'}</p>
                   </article>
                 </div>
               ) : (
-                <p className="muted-text">Loading form section...</p>
+                <p className="muted-text">Cargando seccion de dinamica...</p>
               )}
             </section>
 
             <section id="preview-systems" className="panel preview-section">
               <div className="panel__header">
                 <div>
-                  <span className="page-header__eyebrow">Systems</span>
-                  <h3>Primary and alternate systems</h3>
+                  <span className="page-header__eyebrow">Sistemas</span>
+                  <h3>Sistema principal y sistemas alternativos</h3>
                 </div>
               </div>
 
               {systemsQuery.data !== undefined ? (
                 <div className="preview-grid">
                   <article className="preview-card">
-                    <span className="page-header__eyebrow">Primary System</span>
+                    <span className="page-header__eyebrow">
+                      Sistema principal
+                    </span>
                     <strong>
                       {systemsQuery.data.primarySystem ??
-                        'No primary system saved.'}
+                        'No hay sistema principal guardado.'}
                     </strong>
                   </article>
                   <article className="preview-card">
                     <span className="page-header__eyebrow">
-                      Alternate Systems
+                      Sistemas alternativos
                     </span>
                     {systemsQuery.data.alternateSystems.length > 0 ? (
                       <ul className="preview-list">
@@ -203,12 +209,12 @@ export function ReportPreviewPage(): JSX.Element {
                         )}
                       </ul>
                     ) : (
-                      <p>No alternate systems saved.</p>
+                      <p>No hay sistemas alternativos guardados.</p>
                     )}
                   </article>
                 </div>
               ) : (
-                <p className="muted-text">Loading systems section...</p>
+                <p className="muted-text">Cargando seccion de sistemas...</p>
               )}
             </section>
 
@@ -218,10 +224,8 @@ export function ReportPreviewPage(): JSX.Element {
             >
               <div className="panel__header">
                 <div>
-                  <span className="page-header__eyebrow">
-                    Tactical Analysis
-                  </span>
-                  <h3>Phase-based review</h3>
+                  <span className="page-header__eyebrow">Analisis tactico</span>
+                  <h3>Revision por fases</h3>
                 </div>
               </div>
 
@@ -241,7 +245,7 @@ export function ReportPreviewPage(): JSX.Element {
                             <h3>
                               {item.blockType !== null
                                 ? getBlockTypeLabel(item.blockType)
-                                : 'General phase view'}
+                                : 'Vision general de la fase'}
                             </h3>
                           </div>
                         </div>
@@ -249,7 +253,7 @@ export function ReportPreviewPage(): JSX.Element {
                         {item.keyPoints.length > 0 ? (
                           <>
                             <span className="page-header__eyebrow">
-                              Key Points
+                              Puntos clave
                             </span>
                             <ul className="preview-list">
                               {item.keyPoints.map((keyPoint) => (
@@ -263,11 +267,11 @@ export function ReportPreviewPage(): JSX.Element {
                   </div>
                 ) : (
                   <p className="muted-text">
-                    No tactical analysis items saved yet.
+                    Todavia no hay items de analisis tactico guardados.
                   </p>
                 )
               ) : (
-                <p className="muted-text">Loading tactical analysis...</p>
+                <p className="muted-text">Cargando analisis tactico...</p>
               )}
             </section>
 
@@ -275,28 +279,31 @@ export function ReportPreviewPage(): JSX.Element {
               <div className="panel__header">
                 <div>
                   <span className="page-header__eyebrow">SWOT</span>
-                  <h3>Grouped review by type</h3>
+                  <h3>Revision agrupada por tipo</h3>
                 </div>
               </div>
 
               {swotQuery.data !== undefined ? (
                 <div className="preview-grid">
                   <SwotPreviewGroup
-                    title="Strengths"
+                    title="Fortalezas"
                     items={swotGroups.strength}
                   />
                   <SwotPreviewGroup
-                    title="Weaknesses"
+                    title="Debilidades"
                     items={swotGroups.weakness}
                   />
                   <SwotPreviewGroup
-                    title="Opportunities"
+                    title="Oportunidades"
                     items={swotGroups.opportunity}
                   />
-                  <SwotPreviewGroup title="Threats" items={swotGroups.threat} />
+                  <SwotPreviewGroup
+                    title="Amenazas"
+                    items={swotGroups.threat}
+                  />
                 </div>
               ) : (
-                <p className="muted-text">Loading SWOT...</p>
+                <p className="muted-text">Cargando SWOT...</p>
               )}
             </section>
           </div>
@@ -328,14 +335,14 @@ function SwotPreviewGroup({
               <span>{item.description}</span>
               {item.priority !== null ? (
                 <small className="preview-inline-note">
-                  Priority {item.priority}
+                  Prioridad {item.priority}
                 </small>
               ) : null}
             </li>
           ))}
         </ul>
       ) : (
-        <p>No items added yet.</p>
+        <p>Todavia no hay items agregados.</p>
       )}
     </article>
   );
@@ -344,25 +351,25 @@ function SwotPreviewGroup({
 function getPhaseTypeLabel(value: TacticalAnalysisPhaseType): string {
   switch (value) {
     case 'attack':
-      return 'Attack';
+      return 'Ataque';
     case 'defense':
-      return 'Defense';
+      return 'Defensa';
     case 'attacking_transition':
-      return 'Attacking Transition';
+      return 'Transicion ofensiva';
     case 'defensive_transition':
-      return 'Defensive Transition';
+      return 'Transicion defensiva';
     case 'set_piece':
-      return 'Set Piece';
+      return 'Balon parado';
   }
 }
 
 function getBlockTypeLabel(value: TacticalAnalysisBlockType): string {
   switch (value) {
     case 'high_block':
-      return 'High Block';
+      return 'Bloque alto';
     case 'mid_block':
-      return 'Mid Block';
+      return 'Bloque medio';
     case 'low_block':
-      return 'Low Block';
+      return 'Bloque bajo';
   }
 }

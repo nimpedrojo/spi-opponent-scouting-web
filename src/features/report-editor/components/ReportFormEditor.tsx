@@ -55,8 +55,8 @@ export function ReportFormEditor({
     return (
       <section className="panel">
         <div className="empty-state">
-          <h3>No report selected</h3>
-          <p>Open a report first to edit opponent form and dynamics.</p>
+          <h3>No hay ningun informe seleccionado</h3>
+          <p>Abre primero un informe para editar la dinamica del rival.</p>
         </div>
       </section>
     );
@@ -89,8 +89,8 @@ export function ReportFormEditor({
     <section className="panel">
       <div className="panel__header">
         <div>
-          <span className="page-header__eyebrow">Form</span>
-          <h3>Recent dynamics and context</h3>
+          <span className="page-header__eyebrow">Dinamica</span>
+          <h3>Dinamica reciente y contexto</h3>
         </div>
         <div className="status-strip">
           <span
@@ -98,13 +98,13 @@ export function ReportFormEditor({
               isReadOnly ? 'status-pill status-pill--published' : 'status-pill'
             }
           >
-            {isReadOnly ? 'Read-only' : 'Editable draft'}
+            {isReadOnly ? 'Solo lectura' : 'Borrador editable'}
           </span>
         </div>
       </div>
 
       {formQuery.isLoading ? (
-        <p className="muted-text">Loading form section...</p>
+        <p className="muted-text">Cargando seccion de dinamica...</p>
       ) : null}
 
       <form
@@ -115,7 +115,7 @@ export function ReportFormEditor({
       >
         <div className="editor-form-grid">
           <label className="field">
-            <span className="field__label">League position</span>
+            <span className="field__label">Posicion en liga</span>
             <input
               {...register('leaguePosition')}
               type="number"
@@ -126,7 +126,7 @@ export function ReportFormEditor({
           </label>
 
           <label className="field">
-            <span className="field__label">Points</span>
+            <span className="field__label">Puntos</span>
             <input
               {...register('points')}
               type="number"
@@ -138,21 +138,21 @@ export function ReportFormEditor({
         </div>
 
         <label className="field">
-          <span className="field__label">Recent form text</span>
+          <span className="field__label">Resumen de dinamica reciente</span>
           <textarea
             {...register('recentFormText')}
             rows={4}
-            placeholder="Summarize recent performance trends."
+            placeholder="Resume las tendencias recientes de rendimiento."
             disabled={isReadOnly}
           />
         </label>
 
         <label className="field">
-          <span className="field__label">Notes</span>
+          <span className="field__label">Notas</span>
           <textarea
             {...register('notes')}
             rows={5}
-            placeholder="Add context for coaches and analysts."
+            placeholder="Agrega contexto para cuerpo tecnico y analistas."
             disabled={isReadOnly}
           />
         </label>
@@ -175,7 +175,7 @@ export function ReportFormEditor({
             className="button"
             disabled={isReadOnly || upsertFormMutation.isPending}
           >
-            {upsertFormMutation.isPending ? 'Saving...' : 'Save form'}
+            {upsertFormMutation.isPending ? 'Guardando...' : 'Guardar dinamica'}
           </button>
         </div>
       </form>

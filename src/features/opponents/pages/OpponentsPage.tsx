@@ -38,10 +38,10 @@ export function OpponentsPage(): JSX.Element {
     createOpponentMutation.isPending || updateOpponentMutation.isPending;
   const pageDescription = useMemo(() => {
     if (selectedOpponent !== null) {
-      return `Update opponent details and launch a new scouting report when the target is ready for analysis.`;
+      return 'Actualiza los datos del rival y lanza un nuevo informe cuando el objetivo este listo para el analisis.';
     }
 
-    return 'Manage scouting targets, filter the directory, and launch report creation from a single workflow.';
+    return 'Gestiona objetivos de scouting, filtra el directorio y crea informes desde un unico flujo.';
   }, [selectedOpponent]);
 
   async function handleSubmitOpponent(
@@ -60,7 +60,9 @@ export function OpponentsPage(): JSX.Element {
         setSelectedOpponent(null);
       }
     } catch (error) {
-      setFormErrorMessage(getErrorMessage(error, 'Unable to save opponent.'));
+      setFormErrorMessage(
+        getErrorMessage(error, 'No se pudo guardar el rival.'),
+      );
     }
   }
 
@@ -80,7 +82,7 @@ export function OpponentsPage(): JSX.Element {
       );
     } catch (error) {
       setReportErrorMessage(
-        getErrorMessage(error, 'Unable to create scouting report.'),
+        getErrorMessage(error, 'No se pudo crear el informe de scouting.'),
       );
     } finally {
       setCreatingReportForOpponentId(null);
@@ -90,8 +92,8 @@ export function OpponentsPage(): JSX.Element {
   return (
     <section className="page">
       <PageHeader
-        eyebrow="Opponent Directory"
-        title="Opponents"
+        eyebrow="Directorio de rivales"
+        title="Rivales"
         description={pageDescription}
       />
 

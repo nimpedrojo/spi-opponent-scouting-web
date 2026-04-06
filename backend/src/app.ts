@@ -1,5 +1,6 @@
 import Fastify, { type FastifyInstance } from 'fastify';
 
+import { registerCors } from './shared/http/cors.js';
 import { setErrorHandler } from './shared/http/error-handler.js';
 import {
   opponentRoutes,
@@ -38,6 +39,7 @@ export interface AppDependencies
 export function buildApp(dependencies: AppDependencies): FastifyInstance {
   const app = Fastify();
 
+  registerCors(app);
   setErrorHandler(app);
   app.register(opponentRoutes, {
     prefix: '/opponents',

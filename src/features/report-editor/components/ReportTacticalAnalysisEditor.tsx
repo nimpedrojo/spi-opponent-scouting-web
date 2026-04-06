@@ -26,20 +26,20 @@ const phaseTypeOptions: Array<{
   value: TacticalAnalysisPhaseType;
   label: string;
 }> = [
-  { value: 'attack', label: 'Attack' },
-  { value: 'defense', label: 'Defense' },
-  { value: 'attacking_transition', label: 'Attacking Transition' },
-  { value: 'defensive_transition', label: 'Defensive Transition' },
-  { value: 'set_piece', label: 'Set Piece' },
+  { value: 'attack', label: 'Ataque' },
+  { value: 'defense', label: 'Defensa' },
+  { value: 'attacking_transition', label: 'Transicion ofensiva' },
+  { value: 'defensive_transition', label: 'Transicion defensiva' },
+  { value: 'set_piece', label: 'Balon parado' },
 ];
 
 const blockTypeOptions: Array<{
   value: TacticalAnalysisBlockType;
   label: string;
 }> = [
-  { value: 'high_block', label: 'High Block' },
-  { value: 'mid_block', label: 'Mid Block' },
-  { value: 'low_block', label: 'Low Block' },
+  { value: 'high_block', label: 'Bloque alto' },
+  { value: 'mid_block', label: 'Bloque medio' },
+  { value: 'low_block', label: 'Bloque bajo' },
 ];
 
 export function ReportTacticalAnalysisEditor({
@@ -72,8 +72,8 @@ export function ReportTacticalAnalysisEditor({
     return (
       <section className="panel">
         <div className="empty-state">
-          <h3>No report selected</h3>
-          <p>Open a report first to edit tactical analysis.</p>
+          <h3>No hay ningun informe seleccionado</h3>
+          <p>Abre primero un informe para editar el analisis tactico.</p>
         </div>
       </section>
     );
@@ -109,8 +109,8 @@ export function ReportTacticalAnalysisEditor({
     <section className="panel">
       <div className="panel__header">
         <div>
-          <span className="page-header__eyebrow">Tactical Analysis</span>
-          <h3>Phase-based analysis items</h3>
+          <span className="page-header__eyebrow">Analisis tactico</span>
+          <h3>Items de analisis por fase</h3>
         </div>
         <div className="status-strip">
           <span
@@ -118,13 +118,13 @@ export function ReportTacticalAnalysisEditor({
               isReadOnly ? 'status-pill status-pill--published' : 'status-pill'
             }
           >
-            {isReadOnly ? 'Read-only' : 'Editable draft'}
+            {isReadOnly ? 'Solo lectura' : 'Borrador editable'}
           </span>
         </div>
       </div>
 
       {tacticalAnalysisQuery.isLoading ? (
-        <p className="muted-text">Loading tactical analysis...</p>
+        <p className="muted-text">Cargando analisis tactico...</p>
       ) : null}
 
       <div className="stack">
@@ -147,7 +147,7 @@ export function ReportTacticalAnalysisEditor({
                   onClick={() => removeItem(index)}
                   disabled={items.length === 1}
                 >
-                  Remove item
+                  Eliminar item
                 </button>
               ) : null}
             </div>
@@ -155,7 +155,7 @@ export function ReportTacticalAnalysisEditor({
             <div className="stack">
               <div className="editor-form-grid">
                 <label className="field">
-                  <span className="field__label">Phase</span>
+                  <span className="field__label">Fase</span>
                   <select
                     value={item.phaseType}
                     disabled={isReadOnly}
@@ -172,7 +172,7 @@ export function ReportTacticalAnalysisEditor({
                 </label>
 
                 <label className="field">
-                  <span className="field__label">Block type</span>
+                  <span className="field__label">Tipo de bloque</span>
                   <select
                     value={item.blockType}
                     disabled={isReadOnly}
@@ -180,7 +180,7 @@ export function ReportTacticalAnalysisEditor({
                       updateItem(index, 'blockType', event.target.value)
                     }
                   >
-                    <option value="">No block type</option>
+                    <option value="">Sin tipo de bloque</option>
                     {blockTypeOptions.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
@@ -191,11 +191,11 @@ export function ReportTacticalAnalysisEditor({
               </div>
 
               <label className="field">
-                <span className="field__label">Narrative</span>
+                <span className="field__label">Narrativa</span>
                 <textarea
                   value={item.narrative}
                   rows={5}
-                  placeholder="Describe the tactical behavior for this phase."
+                  placeholder="Describe el comportamiento tactico para esta fase."
                   disabled={isReadOnly}
                   onChange={(event) =>
                     updateItem(index, 'narrative', event.target.value)
@@ -204,11 +204,11 @@ export function ReportTacticalAnalysisEditor({
               </label>
 
               <label className="field">
-                <span className="field__label">Key points</span>
+                <span className="field__label">Puntos clave</span>
                 <textarea
                   value={item.keyPoints}
                   rows={4}
-                  placeholder={'One key point per line'}
+                  placeholder={'Un punto clave por linea'}
                   disabled={isReadOnly}
                   onChange={(event) =>
                     updateItem(index, 'keyPoints', event.target.value)
@@ -226,13 +226,14 @@ export function ReportTacticalAnalysisEditor({
               className="button button--ghost"
               onClick={addItem}
             >
-              Add item
+              Agregar item
             </button>
           </div>
         ) : null}
 
         <p className="muted-text">
-          Keep one tactical idea per item so the report stays easy to scan.
+          Manten una idea tactica por item para que el informe siga siendo facil
+          de revisar.
         </p>
 
         {tacticalAnalysisQuery.error instanceof Error ? (
@@ -255,8 +256,8 @@ export function ReportTacticalAnalysisEditor({
             onClick={() => void handleSave()}
           >
             {replaceTacticalAnalysisMutation.isPending
-              ? 'Saving...'
-              : 'Save tactical analysis'}
+              ? 'Guardando...'
+              : 'Guardar analisis tactico'}
           </button>
         </div>
       </div>

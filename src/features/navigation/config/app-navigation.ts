@@ -7,22 +7,22 @@ export interface AppNavigationItem {
 export const appNavigationItems: AppNavigationItem[] = [
   {
     to: '/opponents',
-    label: 'Opponents',
-    description: 'Directory and scouting targets',
+    label: 'Rivales',
+    description: 'Directorio y objetivos de scouting',
   },
   {
     to: '/reports',
-    label: 'Reports',
-    description: 'Report listing and status overview',
+    label: 'Informes',
+    description: 'Listado de informes y estados',
   },
   {
     to: '/report-editor',
-    label: 'Report Editor',
-    description: 'Section-based scouting workflow',
+    label: 'Editor de informes',
+    description: 'Flujo de scouting por secciones',
   },
   {
     to: '/report-preview',
-    label: 'Report Preview',
-    description: 'Coach-facing review and handoff',
+    label: 'Vista previa del informe',
+    description: 'Revision y entrega para el cuerpo tecnico',
   },
 ];

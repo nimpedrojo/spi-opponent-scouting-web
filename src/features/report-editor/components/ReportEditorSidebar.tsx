@@ -20,18 +20,19 @@ export function ReportEditorSidebar({
     <aside className="editor-sidebar panel">
       <div className="panel__header">
         <div>
-          <span className="page-header__eyebrow">Report Sections</span>
-          <h3>{isReadOnly ? 'Read-only workflow' : 'Editor workflow'}</h3>
+          <span className="page-header__eyebrow">Secciones del informe</span>
+          <h3>{isReadOnly ? 'Flujo de solo lectura' : 'Flujo de edicion'}</h3>
         </div>
       </div>
 
       {isReadOnly ? (
         <p className="muted-text">
-          Published reports stay read-only across all sections.
+          Los informes publicados permanecen en solo lectura en todas las
+          secciones.
         </p>
       ) : null}
 
-      <nav className="editor-sidebar__nav" aria-label="Report sections">
+      <nav className="editor-sidebar__nav" aria-label="Secciones del informe">
         {reportEditorSections.map((section) => (
           <button
             key={section.id}

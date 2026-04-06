@@ -10,10 +10,10 @@ export function AppShellLayout(): JSX.Element {
         <div className="app-sidebar__brand">
           <span className="app-sidebar__eyebrow">ProcessIQ Sports</span>
           <h1>SPI Opponent Scouting</h1>
-          <p>Structured analysis workflows for opponent intelligence.</p>
+          <p>Flujos de analisis estructurado para inteligencia del rival.</p>
         </div>
 
-        <nav aria-label="Primary navigation" className="app-sidebar__nav">
+        <nav aria-label="Navegacion principal" className="app-sidebar__nav">
           {appNavigationItems.map((item) => (
             <NavLink
               key={item.to}

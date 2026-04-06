@@ -61,14 +61,14 @@ describe('ReportEditorPage', () => {
 
     const user = userEvent.setup();
 
-    const notesField = await screen.findByLabelText('Notes');
+    const notesField = await screen.findByLabelText('Notas');
     await waitFor(() => {
       expect(notesField).toHaveValue('Initial note');
     });
     fireEvent.change(notesField, {
       target: { value: 'Updated note' },
     });
-    await user.click(screen.getByRole('button', { name: 'Save form' }));
+    await user.click(screen.getByRole('button', { name: 'Guardar dinamica' }));
 
     await waitFor(() => {
       expect(putForm).toHaveBeenCalledWith({
@@ -79,9 +79,10 @@ describe('ReportEditorPage', () => {
       });
     });
 
-    await user.click(screen.getByRole('button', { name: /Systems/ }));
+    await user.click(screen.getByRole('button', { name: /Sistemas/ }));
 
-    const primarySystemField = await screen.findByLabelText('Primary system');
+    const primarySystemField =
+      await screen.findByLabelText('Sistema principal');
     await waitFor(() => {
       expect(primarySystemField).toHaveValue('1-4-3-3');
     });
@@ -89,11 +90,13 @@ describe('ReportEditorPage', () => {
       target: { value: '1-3-5-2' },
     });
 
-    const alternateSystemsField = screen.getByLabelText('Alternate systems');
+    const alternateSystemsField = screen.getByLabelText(
+      'Sistemas alternativos',
+    );
     fireEvent.change(alternateSystemsField, {
       target: { value: '1-4-4-2\n1-5-4-1' },
     });
-    await user.click(screen.getByRole('button', { name: 'Save systems' }));
+    await user.click(screen.getByRole('button', { name: 'Guardar sistemas' }));
 
     await waitFor(() => {
       expect(putSystems).toHaveBeenCalledWith({

@@ -49,8 +49,8 @@ export function ReportSystemsEditor({
     return (
       <section className="panel">
         <div className="empty-state">
-          <h3>No report selected</h3>
-          <p>Open a report first to manage tactical systems.</p>
+          <h3>No hay ningun informe seleccionado</h3>
+          <p>Abre primero un informe para gestionar los sistemas tacticos.</p>
         </div>
       </section>
     );
@@ -79,8 +79,8 @@ export function ReportSystemsEditor({
     <section className="panel">
       <div className="panel__header">
         <div>
-          <span className="page-header__eyebrow">Systems</span>
-          <h3>Primary and alternate systems</h3>
+          <span className="page-header__eyebrow">Sistemas</span>
+          <h3>Sistema principal y sistemas alternativos</h3>
         </div>
         <div className="status-strip">
           <span
@@ -88,13 +88,13 @@ export function ReportSystemsEditor({
               isReadOnly ? 'status-pill status-pill--published' : 'status-pill'
             }
           >
-            {isReadOnly ? 'Read-only' : 'Editable draft'}
+            {isReadOnly ? 'Solo lectura' : 'Borrador editable'}
           </span>
         </div>
       </div>
 
       {systemsQuery.isLoading ? (
-        <p className="muted-text">Loading systems section...</p>
+        <p className="muted-text">Cargando seccion de sistemas...</p>
       ) : null}
 
       <form
@@ -104,10 +104,10 @@ export function ReportSystemsEditor({
         }}
       >
         <label className="field">
-          <span className="field__label">Primary system</span>
+          <span className="field__label">Sistema principal</span>
           <input
             {...register('primarySystem', {
-              required: 'Primary system is required.',
+              required: 'El sistema principal es obligatorio.',
             })}
             placeholder="1-4-3-3"
             disabled={isReadOnly}
@@ -115,7 +115,7 @@ export function ReportSystemsEditor({
         </label>
 
         <label className="field">
-          <span className="field__label">Alternate systems</span>
+          <span className="field__label">Sistemas alternativos</span>
           <textarea
             {...register('alternateSystems')}
             rows={5}
@@ -125,8 +125,8 @@ export function ReportSystemsEditor({
         </label>
 
         <p className="muted-text">
-          Add one alternate system per line. The backend validates each system
-          code against the catalog.
+          Agrega un sistema alternativo por linea. El backend valida cada codigo
+          contra el catalogo.
         </p>
 
         {systemsQuery.error instanceof Error ? (
@@ -147,7 +147,9 @@ export function ReportSystemsEditor({
             className="button"
             disabled={isReadOnly || replaceSystemsMutation.isPending}
           >
-            {replaceSystemsMutation.isPending ? 'Saving...' : 'Save systems'}
+            {replaceSystemsMutation.isPending
+              ? 'Guardando...'
+              : 'Guardar sistemas'}
           </button>
         </div>
       </form>

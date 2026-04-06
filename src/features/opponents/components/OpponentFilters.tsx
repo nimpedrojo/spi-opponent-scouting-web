@@ -33,39 +33,39 @@ export function OpponentFilters({
     <section className="panel">
       <div className="panel__header">
         <div>
-          <span className="page-header__eyebrow">Search And Filters</span>
-          <h3>Find the right opponent quickly</h3>
+          <span className="page-header__eyebrow">Busqueda y filtros</span>
+          <h3>Encuentra rapido el rival adecuado</h3>
         </div>
         <button
           type="button"
           className="button button--ghost"
           onClick={onReset}
         >
-          Reset filters
+          Limpiar filtros
         </button>
       </div>
 
       <div className="filter-grid">
         <label className="field">
-          <span className="field__label">Search by name</span>
+          <span className="field__label">Buscar por nombre</span>
           <input
             value={filters.search ?? ''}
             onChange={(event) => updateFilter('search', event.target.value)}
-            placeholder="Search opponent name"
+            placeholder="Buscar nombre del rival"
           />
         </label>
 
         <label className="field">
-          <span className="field__label">Category</span>
+          <span className="field__label">Categoria</span>
           <input
             value={filters.category ?? ''}
             onChange={(event) => updateFilter('category', event.target.value)}
-            placeholder="League or competition"
+            placeholder="Liga o competicion"
           />
         </label>
 
         <label className="field">
-          <span className="field__label">Season</span>
+          <span className="field__label">Temporada</span>
           <input
             type="number"
             min="2000"
@@ -77,7 +77,7 @@ export function OpponentFilters({
         </label>
 
         <label className="field">
-          <span className="field__label">Report status</span>
+          <span className="field__label">Estado del informe</span>
           <select
             value={filters.status ?? ''}
             onChange={(event) =>
@@ -89,9 +89,9 @@ export function OpponentFilters({
               )
             }
           >
-            <option value="">All statuses</option>
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
+            <option value="">Todos los estados</option>
+            <option value="draft">Borrador</option>
+            <option value="published">Publicado</option>
           </select>
         </label>
       </div>

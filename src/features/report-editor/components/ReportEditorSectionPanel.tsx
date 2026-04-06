@@ -48,7 +48,7 @@ export function ReportEditorSectionPanel({
         </div>
         {isPreviewSection ? (
           <Link className="button button--ghost" to={previewHref}>
-            Open preview
+            Abrir vista previa
           </Link>
         ) : null}
       </div>
@@ -56,17 +56,17 @@ export function ReportEditorSectionPanel({
       <div className="editor-section-placeholder">
         <p>
           {isPreviewSection
-            ? 'Use this step to review the report in a coach-friendly format before or after publication.'
-            : `The ${section.label.toLowerCase()} editor will live here. This shell keeps the section explicit and ready for focused implementation.`}
+            ? 'Utiliza este paso para revisar el informe en un formato comodo para el cuerpo tecnico antes o despues de publicarlo.'
+            : `El editor de ${section.label.toLowerCase()} vivira aqui. Esta base mantiene la seccion explicita y lista para una implementacion enfocada.`}
         </p>
         <div className="status-strip">
           <span className="status-pill">
             {report?.status === 'published'
-              ? 'Read-only report'
-              : 'Draft editing'}
+              ? 'Informe de solo lectura'
+              : 'Edicion de borrador'}
           </span>
           {report !== null ? (
-            <span className="status-pill">Report #{report.id}</span>
+            <span className="status-pill">Informe #{report.id}</span>
           ) : null}
         </div>
       </div>

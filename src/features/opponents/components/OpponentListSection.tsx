@@ -23,19 +23,19 @@ export function OpponentListSection({
     <section className="panel">
       <div className="panel__header">
         <div>
-          <span className="page-header__eyebrow">Opponent Directory</span>
-          <h3>{items.length} opponents</h3>
+          <span className="page-header__eyebrow">Directorio de rivales</span>
+          <h3>{items.length} rivales</h3>
         </div>
       </div>
 
-      {isLoading ? <p className="muted-text">Loading opponents...</p> : null}
+      {isLoading ? <p className="muted-text">Cargando rivales...</p> : null}
 
       {!isLoading && items.length === 0 ? (
         <div className="empty-state">
-          <h3>No opponents match the current filters</h3>
+          <h3>No hay rivales para los filtros actuales</h3>
           <p>
-            Try broadening the search or create a new opponent to start a
-            scouting workflow.
+            Prueba ampliando la busqueda o crea un nuevo rival para iniciar un
+            flujo de scouting.
           </p>
         </div>
       ) : null}
@@ -50,16 +50,16 @@ export function OpponentListSection({
                 <div className="opponent-card__heading">
                   <h4>{opponent.name}</h4>
                   {activeOpponentId === opponent.id ? (
-                    <span className="status-pill">Editing</span>
+                    <span className="status-pill">Editando</span>
                   ) : null}
                 </div>
 
                 <div className="status-strip">
                   <span className="status-pill">
-                    {opponent.competitionName ?? 'Competition pending'}
+                    {opponent.competitionName ?? 'Competicion pendiente'}
                   </span>
                   <span className="status-pill">
-                    {opponent.countryName ?? 'Country pending'}
+                    {opponent.countryName ?? 'Pais pendiente'}
                   </span>
                 </div>
               </div>
@@ -70,7 +70,7 @@ export function OpponentListSection({
                   className="button button--ghost"
                   onClick={() => onEdit(opponent)}
                 >
-                  Edit
+                  Editar
                 </button>
                 <button
                   type="button"
@@ -79,8 +79,8 @@ export function OpponentListSection({
                   onClick={() => void onCreateScoutingReport(opponent)}
                 >
                   {isCreatingReport
-                    ? 'Creating report...'
-                    : 'Create scouting report'}
+                    ? 'Creando informe...'
+                    : 'Crear informe de scouting'}
                 </button>
               </div>
             </article>

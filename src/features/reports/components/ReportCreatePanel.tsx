@@ -49,8 +49,8 @@ export function ReportCreatePanel({
     <section className="panel">
       <div className="panel__header">
         <div>
-          <span className="page-header__eyebrow">Create Report</span>
-          <h3>Start a new scouting draft</h3>
+          <span className="page-header__eyebrow">Crear informe</span>
+          <h3>Inicia un nuevo borrador de scouting</h3>
         </div>
       </div>
 
@@ -61,13 +61,13 @@ export function ReportCreatePanel({
         }}
       >
         <label className="field">
-          <span className="field__label">Opponent</span>
+          <span className="field__label">Rival</span>
           <select
             {...register('opponentId', {
-              required: 'Opponent is required.',
+              required: 'El rival es obligatorio.',
             })}
           >
-            <option value="">Select an opponent</option>
+            <option value="">Selecciona un rival</option>
             {opponents.map((opponent) => (
               <option key={opponent.id} value={opponent.id}>
                 {opponent.name}
@@ -77,12 +77,13 @@ export function ReportCreatePanel({
         </label>
 
         <label className="field">
-          <span className="field__label">Report date</span>
+          <span className="field__label">Fecha del informe</span>
           <input {...register('reportDate')} type="date" />
         </label>
 
         <p className="muted-text">
-          New reports start as draft. Publishing stays an explicit next step.
+          Los nuevos informes comienzan como borrador. Publicar sigue siendo un
+          paso explicito posterior.
         </p>
 
         {errorMessage !== null ? (
@@ -97,7 +98,7 @@ export function ReportCreatePanel({
             className="button"
             disabled={isSubmitting || opponents.length === 0}
           >
-            {isSubmitting ? 'Creating...' : 'Create report'}
+            {isSubmitting ? 'Creando...' : 'Crear informe'}
           </button>
         </div>
       </form>

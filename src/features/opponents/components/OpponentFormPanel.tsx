@@ -77,10 +77,10 @@ export function OpponentFormPanel({
       <div className="panel__header">
         <div>
           <span className="page-header__eyebrow">
-            {isEditMode ? 'Edit Opponent' : 'Create Opponent'}
+            {isEditMode ? 'Editar rival' : 'Crear rival'}
           </span>
           <h3>
-            {isEditMode ? selectedOpponent.name : 'Add a scouting target'}
+            {isEditMode ? selectedOpponent.name : 'Agregar rival a seguir'}
           </h3>
         </div>
         {isEditMode ? (
@@ -89,7 +89,7 @@ export function OpponentFormPanel({
             className="button button--ghost"
             onClick={onCancelEdit}
           >
-            Cancel edit
+            Cancelar edicion
           </button>
         ) : null}
       </div>
@@ -101,22 +101,22 @@ export function OpponentFormPanel({
         }}
       >
         <label className="field">
-          <span className="field__label">Opponent name</span>
+          <span className="field__label">Nombre del rival</span>
           <input
             {...register('name', {
-              required: 'Opponent name is required.',
+              required: 'El nombre del rival es obligatorio.',
             })}
             placeholder="Real Madrid"
           />
         </label>
 
         <label className="field">
-          <span className="field__label">Country</span>
+          <span className="field__label">Pais</span>
           <input {...register('countryName')} placeholder="Spain" />
         </label>
 
         <label className="field">
-          <span className="field__label">Competition</span>
+          <span className="field__label">Competicion</span>
           <input {...register('competitionName')} placeholder="LaLiga" />
         </label>
 
@@ -129,10 +129,10 @@ export function OpponentFormPanel({
         <div className="button-row">
           <button type="submit" className="button" disabled={isSubmitting}>
             {isSubmitting
-              ? 'Saving...'
+              ? 'Guardando...'
               : isEditMode
-                ? 'Save changes'
-                : 'Create opponent'}
+                ? 'Guardar cambios'
+                : 'Crear rival'}
           </button>
         </div>
       </form>

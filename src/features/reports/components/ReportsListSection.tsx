@@ -1,5 +1,6 @@
 import type { JSX } from 'react';
 
+import { getScoutingReportStatusLabel } from '../../../shared/api/domain-types';
 import type { OpponentResponseDto } from '../../opponents/api/opponentsApi';
 import type { ScoutingReportResponseDto } from '../api/reportsApi';
 
@@ -30,8 +31,10 @@ export function ReportsListSection({
     <section className="panel">
       <div className="panel__header">
         <div>
-          <span className="page-header__eyebrow">Report Lifecycle</span>
-          <h3>{reports.length} reports</h3>
+          <span className="page-header__eyebrow">
+            Ciclo de vida del informe
+          </span>
+          <h3>{reports.length} informes</h3>
         </div>
       </div>
 
@@ -41,14 +44,14 @@ export function ReportsListSection({
         </p>
       ) : null}
 
-      {isLoading ? <p className="muted-text">Loading reports...</p> : null}
+      {isLoading ? <p className="muted-text">Cargando informes...</p> : null}
 
       {!isLoading && reports.length === 0 ? (
         <div className="empty-state">
-          <h3>No reports found</h3>
+          <h3>No se encontraron informes</h3>
           <p>
-            Create a draft report or adjust the filters to review a different
-            lifecycle state.
+            Crea un informe en borrador o ajusta los filtros para revisar otro
+            estado del ciclo de vida.
           </p>
         </div>
       ) : null}
@@ -71,11 +74,9 @@ export function ReportsListSection({
               <div className="report-card__content">
                 <div className="report-card__header">
                   <div>
-                    <h4>
-                      {opponent?.name ?? `Opponent #${report.opponentId}`}
-                    </h4>
+                    <h4>{opponent?.name ?? `Rival #${report.opponentId}`}</h4>
                     <p className="muted-text">
-                      Report #{report.id} • Version {report.versionNumber}
+                      Informe #{report.id} • Version {report.versionNumber}
                     </p>
                   </div>
 
@@ -87,17 +88,17 @@ export function ReportsListSection({
                           : 'status-pill'
                       }
                     >
-                      {report.status}
+                      {getScoutingReportStatusLabel(report.status)}
                     </span>
                     <span className="status-pill">
-                      {report.reportDate ?? 'No report date'}
+                      {report.reportDate ?? 'Sin fecha de informe'}
                     </span>
                   </div>
                 </div>
 
                 <div className="status-strip">
                   <span className="status-pill">
-                    Opponent: {opponent?.name ?? report.opponentId}
+                    Rival: {opponent?.name ?? report.opponentId}
                   </span>
                   {opponent?.competitionName !== null &&
                   opponent?.competitionName !== undefined ? (
@@ -114,7 +115,7 @@ export function ReportsListSection({
                   className="button button--ghost"
                   onClick={() => onOpenReport(report)}
                 >
-                  {isPublished ? 'Open preview' : 'Open report'}
+                  {isPublished ? 'Abrir vista previa' : 'Abrir informe'}
                 </button>
                 <button
                   type="button"
@@ -122,7 +123,7 @@ export function ReportsListSection({
                   disabled={isDuplicatePending}
                   onClick={() => void onDuplicateReport(report)}
                 >
-                  {isDuplicatePending ? 'Duplicating...' : 'Duplicate'}
+                  {isDuplicatePending ? 'Duplicando...' : 'Duplicar'}
                 </button>
                 <button
                   type="button"
@@ -130,7 +131,7 @@ export function ReportsListSection({
                   disabled={isPublished || isPublishPending}
                   onClick={() => void onPublishReport(report)}
                 >
-                  {isPublishPending ? 'Publishing...' : 'Publish'}
+                  {isPublishPending ? 'Publicando...' : 'Publicar'}
                 </button>
               </div>
             </article>

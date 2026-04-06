@@ -1,5 +1,6 @@
 import type { JSX } from 'react';
 
+import { getScoutingReportStatusLabel } from '../../../shared/api/domain-types';
 import type { OpponentResponseDto } from '../../opponents/api/opponentsApi';
 import type { ScoutingReportResponseDto } from '../../reports/api/reportsApi';
 
@@ -23,7 +24,7 @@ export function ReportEditorHeader({
   if (isLoading) {
     return (
       <section className="panel">
-        <p className="muted-text">Loading report context...</p>
+        <p className="muted-text">Cargando contexto del informe...</p>
       </section>
     );
   }
@@ -32,10 +33,10 @@ export function ReportEditorHeader({
     return (
       <section className="panel">
         <div className="empty-state">
-          <h3>Select a report to begin editing</h3>
+          <h3>Selecciona un informe para empezar a editar</h3>
           <p>
-            Open a draft report from the Reports page or create a new one from
-            the Opponents workflow.
+            Abre un informe en borrador desde la pantalla de Informes o crea uno
+            nuevo desde el flujo de Rivales.
           </p>
         </div>
       </section>
@@ -46,12 +47,12 @@ export function ReportEditorHeader({
     <section className="panel">
       <div className="editor-header">
         <div className="editor-header__identity">
-          <span className="page-header__eyebrow">Active Report</span>
-          <h3>{opponent?.name ?? `Opponent #${report.opponentId}`}</h3>
+          <span className="page-header__eyebrow">Informe activo</span>
+          <h3>{opponent?.name ?? `Rival #${report.opponentId}`}</h3>
           <p className="muted-text">
             {report.status === 'published'
-              ? 'This report is published and read-only. Duplicate it to continue editing in a new draft.'
-              : 'Section-based editing shell for scouting preparation.'}
+              ? 'Este informe esta publicado y es de solo lectura. Duplicalo para seguir editando en un nuevo borrador.'
+              : 'Entorno de edicion por secciones para la preparacion de scouting.'}
           </p>
         </div>
 
@@ -64,11 +65,11 @@ export function ReportEditorHeader({
                   : 'status-pill'
               }
             >
-              {report.status}
+              {getScoutingReportStatusLabel(report.status)}
             </span>
             <span className="status-pill">Version {report.versionNumber}</span>
             <span className="status-pill">
-              Opponent: {opponent?.name ?? report.opponentId}
+              Rival: {opponent?.name ?? report.opponentId}
             </span>
           </div>
 
@@ -79,7 +80,7 @@ export function ReportEditorHeader({
               disabled={isDuplicating}
               onClick={() => void onDuplicateReport()}
             >
-              {isDuplicating ? 'Duplicating...' : 'Duplicate to draft'}
+              {isDuplicating ? 'Duplicando...' : 'Duplicar a borrador'}
             </button>
           </div>
         </div>
@@ -87,8 +88,9 @@ export function ReportEditorHeader({
 
       {report.status === 'published' ? (
         <p className="feedback-message feedback-message--info">
-          Editing is disabled for published reports. Review the content or
-          duplicate this report to create a new editable draft version.
+          La edicion esta deshabilitada para informes publicados. Revisa el
+          contenido o duplica este informe para crear una nueva version editable
+          en borrador.
         </p>
       ) : null}
 

@@ -54,7 +54,9 @@ export function ReportsPage(): JSX.Element {
         `/report-editor?reportId=${report.id}&opponentId=${report.opponentId}`,
       );
     } catch (error) {
-      setCreateErrorMessage(getErrorMessage(error, 'Unable to create report.'));
+      setCreateErrorMessage(
+        getErrorMessage(error, 'No se pudo crear el informe.'),
+      );
     }
   }
 
@@ -83,7 +85,7 @@ export function ReportsPage(): JSX.Element {
       );
     } catch (error) {
       setActionErrorMessage(
-        getErrorMessage(error, 'Unable to duplicate report.'),
+        getErrorMessage(error, 'No se pudo duplicar el informe.'),
       );
     } finally {
       setActiveMutationReportId(null);
@@ -102,7 +104,7 @@ export function ReportsPage(): JSX.Element {
       await publishScoutingReportMutation.mutateAsync(report.id);
     } catch (error) {
       setActionErrorMessage(
-        getErrorMessage(error, 'Unable to publish report.'),
+        getErrorMessage(error, 'No se pudo publicar el informe.'),
       );
     } finally {
       setActiveMutationReportId(null);
@@ -113,9 +115,9 @@ export function ReportsPage(): JSX.Element {
   return (
     <section className="page">
       <PageHeader
-        eyebrow="Scouting Reports"
-        title="Reports"
-        description="Manage report lifecycle clearly: create drafts, open work in progress, duplicate versions, and publish intentionally."
+        eyebrow="Informes de scouting"
+        title="Informes"
+        description="Gestiona con claridad el ciclo de vida del informe: crea borradores, abre trabajo en curso, duplica versiones y publica de forma intencional."
       />
 
       <ReportsFilters

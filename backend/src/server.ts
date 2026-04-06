@@ -7,6 +7,9 @@ import { MysqlScoutingReportSystemsRepository } from './modules/scouting-report-
 import { MysqlScoutingReportTacticalAnalysisRepository } from './modules/scouting-report-tactical-analysis/repositories/mysql-scouting-report-tactical-analysis.repository.js';
 import { MysqlScoutingReportSwotRepository } from './modules/scouting-report-swot/repositories/mysql-scouting-report-swot.repository.js';
 import { MysqlScoutingReportRepository } from './modules/scouting-reports/repositories/mysql-scouting-report.repository.js';
+import { loadBackendEnvironment } from './shared/config/load-env.js';
+
+loadBackendEnvironment();
 
 async function startServer(): Promise<void> {
   const pool = mysql.createPool({

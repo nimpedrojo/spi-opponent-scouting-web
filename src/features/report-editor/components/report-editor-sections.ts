@@ -7,27 +7,27 @@ export interface ReportEditorSection {
 export const reportEditorSections: ReportEditorSection[] = [
   {
     id: 'form',
-    label: 'Form',
-    description: 'Recent dynamics and contextual notes.',
+    label: 'Dinamica',
+    description: 'Dinamica reciente y notas de contexto.',
   },
   {
     id: 'systems',
-    label: 'Systems',
-    description: 'Primary and alternate tactical systems.',
+    label: 'Sistemas',
+    description: 'Sistema principal y sistemas alternativos.',
   },
   {
     id: 'tactical-analysis',
-    label: 'Tactical Analysis',
-    description: 'Phase-based tactical observations.',
+    label: 'Analisis tactico',
+    description: 'Observaciones tacticas por fase.',
   },
   {
     id: 'swot',
     label: 'SWOT',
-    description: 'Structured strengths, risks, and opportunities.',
+    description: 'Fortalezas, riesgos y oportunidades estructuradas.',
   },
   {
     id: 'preview',
-    label: 'Preview',
-    description: 'Read-oriented review before publication.',
+    label: 'Vista previa',
+    description: 'Revision de lectura antes de publicar.',
   },
 ];
