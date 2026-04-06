@@ -69,3 +69,12 @@ http://localhost:5173
 - `npm run format` formats the codebase with Prettier
 - `npm run format:check` validates formatting
 - `npm run typecheck` runs the TypeScript app check without emitting files
+
+## Backend MVP Model Assets
+
+The initial API domain-model assets for the scouting backend are documented separately so they do not mix with the frontend runtime:
+
+- [backend/database/migrations/001_initial_mvp_domain.up.sql](/Users/nimpedrojo/Documents/01.%20Desarrollo/spi-opponent-scouting-web/backend/database/migrations/001_initial_mvp_domain.up.sql)
+- [backend/database/seeds/001_system_catalog.sql](/Users/nimpedrojo/Documents/01.%20Desarrollo/spi-opponent-scouting-web/backend/database/seeds/001_system_catalog.sql)
+- [backend/domain/entities/mvp-domain-model.ts](/Users/nimpedrojo/Documents/01.%20Desarrollo/spi-opponent-scouting-web/backend/domain/entities/mvp-domain-model.ts)
+- [docs/architecture/mvp-domain-model.md](/Users/nimpedrojo/Documents/01.%20Desarrollo/spi-opponent-scouting-web/docs/architecture/mvp-domain-model.md)
