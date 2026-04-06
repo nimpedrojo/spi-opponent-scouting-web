@@ -26,7 +26,15 @@ export function ReportEditorSectionPanel({
   }
 
   if (section.id === 'tactical-analysis') {
-    return <ReportTacticalAnalysisEditor report={report} />;
+    return (
+      <ReportTacticalAnalysisEditor report={report} sectionMode="general" />
+    );
+  }
+
+  if (section.id === 'set-piece') {
+    return (
+      <ReportTacticalAnalysisEditor report={report} sectionMode="set-piece" />
+    );
   }
 
   if (section.id === 'swot') {

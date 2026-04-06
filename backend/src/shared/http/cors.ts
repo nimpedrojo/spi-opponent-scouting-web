@@ -14,12 +14,8 @@ export function registerCors(app: FastifyInstance): void {
   });
 }
 
-function applyCorsHeaders(
-  request: FastifyRequest,
-  reply: FastifyReply,
-): void {
-  const configuredOrigin =
-    process.env.CORS_ORIGIN ?? DEFAULT_ALLOWED_ORIGIN;
+function applyCorsHeaders(request: FastifyRequest, reply: FastifyReply): void {
+  const configuredOrigin = process.env.CORS_ORIGIN ?? DEFAULT_ALLOWED_ORIGIN;
   const requestOrigin = request.headers.origin;
   const allowOrigin =
     requestOrigin === undefined || configuredOrigin === '*'

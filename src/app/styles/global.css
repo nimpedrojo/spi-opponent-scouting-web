@@ -511,6 +511,106 @@ select {
   background: rgba(246, 248, 244, 0.8);
 }
 
+.system-diagram-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.system-diagram-card {
+  padding: 1rem;
+  border: 1px solid rgba(16, 35, 26, 0.08);
+  border-radius: 16px;
+  background: rgba(246, 248, 244, 0.8);
+}
+
+.system-diagram-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.system-diagram-card__header h4 {
+  margin: 0;
+}
+
+.system-pitch {
+  width: 100%;
+}
+
+.system-pitch__surface {
+  position: relative;
+  aspect-ratio: 7 / 10;
+  border-radius: 18px;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(255, 255, 255, 0.14),
+      transparent 18%
+    ),
+    linear-gradient(180deg, #6ba56f 0%, #4f8c55 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.system-pitch__line--outline {
+  position: absolute;
+  inset: 6%;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 8px;
+}
+
+.system-pitch__line--halfway {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 50%;
+  border-top: 2px solid rgba(255, 255, 255, 0.85);
+  transform: translateY(-50%);
+}
+
+.system-pitch__circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 22%;
+  aspect-ratio: 1;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+}
+
+.system-pitch__box {
+  position: absolute;
+  left: 24%;
+  width: 52%;
+  height: 14%;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+}
+
+.system-pitch__box--top {
+  top: 6%;
+  border-top: none;
+}
+
+.system-pitch__box--bottom {
+  bottom: 6%;
+  border-bottom: none;
+}
+
+.system-pitch__player {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  border-radius: 999px;
+  background: #113b27;
+  box-shadow: 0 4px 12px rgba(16, 35, 26, 0.22);
+  transform: translate(-50%, -50%);
+}
+
 .editor-subitem {
   padding: 0.9rem;
   border: 1px solid rgba(16, 35, 26, 0.08);

@@ -2,6 +2,7 @@ import { useEffect, type JSX } from 'react';
 
 import { ApiError } from '../../../shared/api/api-client';
 import { useAppForm } from '../../../shared/forms/useAppForm';
+import { SystemPitchDiagram } from '../../../shared/ui/SystemPitchDiagram';
 import type { ScoutingReportResponseDto } from '../../reports/api/reportsApi';
 import {
   useReplaceScoutingReportSystemsMutation,
@@ -30,9 +31,12 @@ export function ReportSystemsEditor({
   const isReadOnly = report?.status === 'published';
   const systemsQuery = useScoutingReportSystemsQuery(reportId);
   const replaceSystemsMutation = useReplaceScoutingReportSystemsMutation();
-  const { handleSubmit, register, reset } = useAppForm<ReportSystemsValues>({
-    defaultValues: emptySystemsValues,
-  });
+  const { handleSubmit, register, reset, watch } =
+    useAppForm<ReportSystemsValues>({
+      defaultValues: emptySystemsValues,
+    });
+  const watchedPrimarySystem = watch('primarySystem');
+  const watchedAlternateSystems = watch('alternateSystems');
 
   useEffect(() => {
     if (systemsQuery.data === undefined) {
@@ -128,6 +132,25 @@ export function ReportSystemsEditor({
           Agrega un sistema alternativo por linea. El backend valida cada codigo
           contra el catalogo.
         </p>
+
+        <div className="system-diagram-grid">
+          <SystemPitchDiagram
+            title="Sistema principal"
+            subtitle="Campograma"
+            systemCode={watchedPrimarySystem ?? ''}
+          />
+
+          {parseAlternateSystems(watchedAlternateSystems ?? '').map(
+            (systemCode, index) => (
+              <SystemPitchDiagram
+                key={`${systemCode}-${index}`}
+                title={`Alternativo ${index + 1}`}
+                subtitle="Campograma"
+                systemCode={systemCode}
+              />
+            ),
+          )}
+        </div>
 
         {systemsQuery.error instanceof Error ? (
           <p className="feedback-message feedback-message--error">

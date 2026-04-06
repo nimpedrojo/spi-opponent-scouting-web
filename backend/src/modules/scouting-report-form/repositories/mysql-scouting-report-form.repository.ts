@@ -134,7 +134,8 @@ function parseFormSummary(summary: string | null): OpponentFormRecord {
         typeof parsedValue.leaguePosition === 'number'
           ? parsedValue.leaguePosition
           : null,
-      points: typeof parsedValue.points === 'number' ? parsedValue.points : null,
+      points:
+        typeof parsedValue.points === 'number' ? parsedValue.points : null,
       recentFormText:
         typeof parsedValue.recentFormText === 'string'
           ? parsedValue.recentFormText

@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 
 import { getScoutingReportStatusLabel } from '../../../shared/api/domain-types';
 import { PageHeader } from '../../../shared/ui/PageHeader';
+import { SystemPitchDiagram } from '../../../shared/ui/SystemPitchDiagram';
 import { useOpponentQuery } from '../../opponents/api/opponentsApi';
 import { useScoutingReportQuery } from '../../reports/api/reportsApi';
 import { useScoutingReportFormQuery } from '../../report-editor/api/formApi';
@@ -42,6 +43,14 @@ export function ReportPreviewPage(): JSX.Element {
     threat:
       swotQuery.data?.items.filter((item) => item.swotType === 'threat') ?? [],
   };
+  const tacticalAnalysisItems =
+    tacticalAnalysisQuery.data?.items.filter(
+      (item) => item.phaseType !== 'set_piece',
+    ) ?? [];
+  const setPieceItems =
+    tacticalAnalysisQuery.data?.items.filter(
+      (item) => item.phaseType === 'set_piece',
+    ) ?? [];
 
   return (
     <section className="page preview-page">
@@ -132,6 +141,9 @@ export function ReportPreviewPage(): JSX.Element {
               <a className="preview-toc__link" href="#preview-swot">
                 SWOT
               </a>
+              <a className="preview-toc__link" href="#preview-set-piece">
+                Balon parado
+              </a>
             </nav>
           </aside>
 
@@ -186,32 +198,52 @@ export function ReportPreviewPage(): JSX.Element {
               </div>
 
               {systemsQuery.data !== undefined ? (
-                <div className="preview-grid">
-                  <article className="preview-card">
-                    <span className="page-header__eyebrow">
-                      Sistema principal
-                    </span>
-                    <strong>
-                      {systemsQuery.data.primarySystem ??
-                        'No hay sistema principal guardado.'}
-                    </strong>
-                  </article>
-                  <article className="preview-card">
-                    <span className="page-header__eyebrow">
-                      Sistemas alternativos
-                    </span>
-                    {systemsQuery.data.alternateSystems.length > 0 ? (
-                      <ul className="preview-list">
-                        {systemsQuery.data.alternateSystems.map(
-                          (systemCode) => (
-                            <li key={systemCode}>{systemCode}</li>
-                          ),
-                        )}
-                      </ul>
-                    ) : (
-                      <p>No hay sistemas alternativos guardados.</p>
+                <div className="stack">
+                  <div className="preview-grid">
+                    <article className="preview-card">
+                      <span className="page-header__eyebrow">
+                        Sistema principal
+                      </span>
+                      <strong>
+                        {systemsQuery.data.primarySystem ??
+                          'No hay sistema principal guardado.'}
+                      </strong>
+                    </article>
+                    <article className="preview-card">
+                      <span className="page-header__eyebrow">
+                        Sistemas alternativos
+                      </span>
+                      {systemsQuery.data.alternateSystems.length > 0 ? (
+                        <ul className="preview-list">
+                          {systemsQuery.data.alternateSystems.map(
+                            (systemCode) => (
+                              <li key={systemCode}>{systemCode}</li>
+                            ),
+                          )}
+                        </ul>
+                      ) : (
+                        <p>No hay sistemas alternativos guardados.</p>
+                      )}
+                    </article>
+                  </div>
+
+                  <div className="system-diagram-grid">
+                    <SystemPitchDiagram
+                      title="Sistema principal"
+                      subtitle="Campograma"
+                      systemCode={systemsQuery.data.primarySystem}
+                    />
+                    {systemsQuery.data.alternateSystems.map(
+                      (systemCode, index) => (
+                        <SystemPitchDiagram
+                          key={`${systemCode}-${index}`}
+                          title={`Alternativo ${index + 1}`}
+                          subtitle="Campograma"
+                          systemCode={systemCode}
+                        />
+                      ),
                     )}
-                  </article>
+                  </div>
                 </div>
               ) : (
                 <p className="muted-text">Cargando seccion de sistemas...</p>
@@ -230,9 +262,9 @@ export function ReportPreviewPage(): JSX.Element {
               </div>
 
               {tacticalAnalysisQuery.data !== undefined ? (
-                tacticalAnalysisQuery.data.items.length > 0 ? (
+                tacticalAnalysisItems.length > 0 ? (
                   <div className="stack">
-                    {tacticalAnalysisQuery.data.items.map((item, index) => (
+                    {tacticalAnalysisItems.map((item, index) => (
                       <article
                         key={`${item.phaseType}-${index}`}
                         className="preview-card"
@@ -272,6 +304,60 @@ export function ReportPreviewPage(): JSX.Element {
                 )
               ) : (
                 <p className="muted-text">Cargando analisis tactico...</p>
+              )}
+            </section>
+
+            <section id="preview-set-piece" className="panel preview-section">
+              <div className="panel__header">
+                <div>
+                  <span className="page-header__eyebrow">Balon parado</span>
+                  <h3>Acciones a balon parado y patrones de ejecucion</h3>
+                </div>
+              </div>
+
+              {tacticalAnalysisQuery.data !== undefined ? (
+                setPieceItems.length > 0 ? (
+                  <div className="stack">
+                    {setPieceItems.map((item, index) => (
+                      <article
+                        key={`set-piece-${index}`}
+                        className="preview-card"
+                      >
+                        <div className="panel__header">
+                          <div>
+                            <span className="page-header__eyebrow">
+                              Balon parado
+                            </span>
+                            <h3>
+                              {item.blockType !== null
+                                ? getBlockTypeLabel(item.blockType)
+                                : 'Estructura general'}
+                            </h3>
+                          </div>
+                        </div>
+                        <p>{item.narrative}</p>
+                        {item.keyPoints.length > 0 ? (
+                          <>
+                            <span className="page-header__eyebrow">
+                              Puntos clave
+                            </span>
+                            <ul className="preview-list">
+                              {item.keyPoints.map((keyPoint) => (
+                                <li key={keyPoint}>{keyPoint}</li>
+                              ))}
+                            </ul>
+                          </>
+                        ) : null}
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="muted-text">
+                    Todavia no hay acciones de balon parado guardadas.
+                  </p>
+                )
+              ) : (
+                <p className="muted-text">Cargando balon parado...</p>
               )}
             </section>
 

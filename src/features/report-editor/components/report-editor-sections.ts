@@ -21,6 +21,11 @@ export const reportEditorSections: ReportEditorSection[] = [
     description: 'Observaciones tacticas por fase.',
   },
   {
+    id: 'set-piece',
+    label: 'Balon parado',
+    description: 'Acciones a balon parado y patrones de ejecucion.',
+  },
+  {
     id: 'swot',
     label: 'SWOT',
     description: 'Fortalezas, riesgos y oportunidades estructuradas.',

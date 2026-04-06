@@ -13,6 +13,7 @@ import {
 
 interface ReportTacticalAnalysisEditorProps {
   report: ScoutingReportResponseDto | null;
+  sectionMode?: 'general' | 'set-piece';
 }
 
 interface TacticalAnalysisEditorItem {
@@ -44,6 +45,7 @@ const blockTypeOptions: Array<{
 
 export function ReportTacticalAnalysisEditor({
   report,
+  sectionMode = 'general',
 }: ReportTacticalAnalysisEditorProps): JSX.Element {
   const reportId = report?.id ?? 0;
   const isReadOnly = report?.status === 'published';
@@ -52,28 +54,36 @@ export function ReportTacticalAnalysisEditor({
   const replaceTacticalAnalysisMutation =
     useReplaceScoutingReportTacticalAnalysisMutation();
   const [items, setItems] = useState<TacticalAnalysisEditorItem[]>([
-    createEmptyItem(),
+    createEmptyItem(sectionMode),
   ]);
+  const isSetPieceSection = sectionMode === 'set-piece';
 
   useEffect(() => {
     if (tacticalAnalysisQuery.data === undefined) {
       return;
     }
 
-    if (tacticalAnalysisQuery.data.items.length === 0) {
-      setItems([createEmptyItem()]);
+    const filteredItems = tacticalAnalysisQuery.data.items.filter((item) =>
+      isItemIncludedInSection(item.phaseType, sectionMode),
+    );
+
+    if (filteredItems.length === 0) {
+      setItems([createEmptyItem(sectionMode)]);
       return;
     }
 
-    setItems(tacticalAnalysisQuery.data.items.map(mapResponseItemToEditorItem));
-  }, [tacticalAnalysisQuery.data]);
+    setItems(filteredItems.map(mapResponseItemToEditorItem));
+  }, [sectionMode, tacticalAnalysisQuery.data]);
 
   if (report === null) {
     return (
       <section className="panel">
         <div className="empty-state">
           <h3>No hay ningun informe seleccionado</h3>
-          <p>Abre primero un informe para editar el analisis tactico.</p>
+          <p>
+            Abre primero un informe para editar{' '}
+            {isSetPieceSection ? 'el balon parado.' : 'el analisis tactico.'}
+          </p>
         </div>
       </section>
     );
@@ -82,13 +92,21 @@ export function ReportTacticalAnalysisEditor({
   const activeReport = report;
 
   async function handleSave(): Promise<void> {
+    const preservedItems =
+      tacticalAnalysisQuery.data?.items.filter(
+        (item) => !isItemIncludedInSection(item.phaseType, sectionMode),
+      ) ?? [];
+
     const body: ReplaceScoutingReportTacticalAnalysisBodyDto = {
-      items: items.map((item) => ({
-        phaseType: item.phaseType,
-        blockType: item.blockType === '' ? null : item.blockType,
-        narrative: item.narrative.trim(),
-        keyPoints: parseKeyPoints(item.keyPoints),
-      })),
+      items: [
+        ...preservedItems,
+        ...items.map((item) => ({
+          phaseType: item.phaseType,
+          blockType: item.blockType === '' ? null : item.blockType,
+          narrative: item.narrative.trim(),
+          keyPoints: parseKeyPoints(item.keyPoints),
+        })),
+      ],
     };
 
     const savedTacticalAnalysis =
@@ -97,20 +115,30 @@ export function ReportTacticalAnalysisEditor({
         body,
       });
 
-    if (savedTacticalAnalysis.items.length === 0) {
-      setItems([createEmptyItem()]);
+    const filteredSavedItems = savedTacticalAnalysis.items.filter((item) =>
+      isItemIncludedInSection(item.phaseType, sectionMode),
+    );
+
+    if (filteredSavedItems.length === 0) {
+      setItems([createEmptyItem(sectionMode)]);
       return;
     }
 
-    setItems(savedTacticalAnalysis.items.map(mapResponseItemToEditorItem));
+    setItems(filteredSavedItems.map(mapResponseItemToEditorItem));
   }
 
   return (
     <section className="panel">
       <div className="panel__header">
         <div>
-          <span className="page-header__eyebrow">Analisis tactico</span>
-          <h3>Items de analisis por fase</h3>
+          <span className="page-header__eyebrow">
+            {isSetPieceSection ? 'Balon parado' : 'Analisis tactico'}
+          </span>
+          <h3>
+            {isSetPieceSection
+              ? 'Acciones a balon parado y patrones de ejecucion'
+              : 'Items de analisis por fase'}
+          </h3>
         </div>
         <div className="status-strip">
           <span
@@ -124,7 +152,11 @@ export function ReportTacticalAnalysisEditor({
       </div>
 
       {tacticalAnalysisQuery.isLoading ? (
-        <p className="muted-text">Cargando analisis tactico...</p>
+        <p className="muted-text">
+          {isSetPieceSection
+            ? 'Cargando balon parado...'
+            : 'Cargando analisis tactico...'}
+        </p>
       ) : null}
 
       <div className="stack">
@@ -154,22 +186,26 @@ export function ReportTacticalAnalysisEditor({
 
             <div className="stack">
               <div className="editor-form-grid">
-                <label className="field">
-                  <span className="field__label">Fase</span>
-                  <select
-                    value={item.phaseType}
-                    disabled={isReadOnly}
-                    onChange={(event) =>
-                      updateItem(index, 'phaseType', event.target.value)
-                    }
-                  >
-                    {phaseTypeOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                {!isSetPieceSection ? (
+                  <label className="field">
+                    <span className="field__label">Fase</span>
+                    <select
+                      value={item.phaseType}
+                      disabled={isReadOnly}
+                      onChange={(event) =>
+                        updateItem(index, 'phaseType', event.target.value)
+                      }
+                    >
+                      {phaseTypeOptions
+                        .filter((option) => option.value !== 'set_piece')
+                        .map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                    </select>
+                  </label>
+                ) : null}
 
                 <label className="field">
                   <span className="field__label">Tipo de bloque</span>
@@ -232,8 +268,9 @@ export function ReportTacticalAnalysisEditor({
         ) : null}
 
         <p className="muted-text">
-          Manten una idea tactica por item para que el informe siga siendo facil
-          de revisar.
+          {isSetPieceSection
+            ? 'Manten una accion o patron por item para que el balon parado se revise con claridad.'
+            : 'Manten una idea tactica por item para que el informe siga siendo facil de revisar.'}
         </p>
 
         {tacticalAnalysisQuery.error instanceof Error ? (
@@ -257,7 +294,9 @@ export function ReportTacticalAnalysisEditor({
           >
             {replaceTacticalAnalysisMutation.isPending
               ? 'Guardando...'
-              : 'Guardar analisis tactico'}
+              : isSetPieceSection
+                ? 'Guardar balon parado'
+                : 'Guardar analisis tactico'}
           </button>
         </div>
       </div>
@@ -265,7 +304,7 @@ export function ReportTacticalAnalysisEditor({
   );
 
   function addItem(): void {
-    setItems((currentItems) => [...currentItems, createEmptyItem()]);
+    setItems((currentItems) => [...currentItems, createEmptyItem(sectionMode)]);
   }
 
   function removeItem(index: number): void {
@@ -296,9 +335,11 @@ export function ReportTacticalAnalysisEditor({
   }
 }
 
-function createEmptyItem(): TacticalAnalysisEditorItem {
+function createEmptyItem(
+  sectionMode: 'general' | 'set-piece',
+): TacticalAnalysisEditorItem {
   return {
-    phaseType: 'attack',
+    phaseType: sectionMode === 'set-piece' ? 'set_piece' : 'attack',
     blockType: '',
     narrative: '',
     keyPoints: '',
@@ -341,4 +382,15 @@ function getErrorMessage(error: Error): string {
   }
 
   return error.message;
+}
+
+function isItemIncludedInSection(
+  phaseType: TacticalAnalysisPhaseType,
+  sectionMode: 'general' | 'set-piece',
+): boolean {
+  if (sectionMode === 'set-piece') {
+    return phaseType === 'set_piece';
+  }
+
+  return phaseType !== 'set_piece';
 }
