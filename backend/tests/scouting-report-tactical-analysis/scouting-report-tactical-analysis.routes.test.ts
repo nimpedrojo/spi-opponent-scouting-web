@@ -11,7 +11,6 @@ import type {
   UpdateOpponentInput,
 } from '../../src/modules/opponents/types/opponent.types.js';
 import type { ScoutingReportFormRepository } from '../../src/modules/scouting-report-form/repositories/scouting-report-form.repository.js';
-import type { ScoutingReportTacticalAnalysisRepository } from '../../src/modules/scouting-report-tactical-analysis/repositories/scouting-report-tactical-analysis.repository.js';
 import type {
   OpponentFormRecord,
   ScoutingReportFormReportRecord,
@@ -23,6 +22,11 @@ import type {
   ScoutingReportSystemsReportRecord,
   SystemCatalogRecord,
 } from '../../src/modules/scouting-report-systems/types/scouting-report-systems.types.js';
+import type { ScoutingReportTacticalAnalysisRepository } from '../../src/modules/scouting-report-tactical-analysis/repositories/scouting-report-tactical-analysis.repository.js';
+import type {
+  ScoutingReportTacticalAnalysisReportRecord,
+  TacticalAnalysisItemRecord,
+} from '../../src/modules/scouting-report-tactical-analysis/types/scouting-report-tactical-analysis.types.js';
 import type { ScoutingReportRepository } from '../../src/modules/scouting-reports/repositories/scouting-report.repository.js';
 import type {
   CreateScoutingReportInput,
@@ -30,14 +34,10 @@ import type {
   ScoutingReportRecord,
   UpdateScoutingReportMetadataInput,
 } from '../../src/modules/scouting-reports/types/scouting-report.types.js';
-import type {
-  ScoutingReportTacticalAnalysisReportRecord,
-  TacticalAnalysisItemRecord,
-} from '../../src/modules/scouting-report-tactical-analysis/types/scouting-report-tactical-analysis.types.js';
 
 class NoopOpponentRepository implements OpponentRepository {
   async create(_input: CreateOpponentInput): Promise<OpponentRecord> {
-    throw new Error('Not implemented for form route tests');
+    throw new Error('Not implemented for tactical analysis route tests');
   }
 
   async update(
@@ -60,7 +60,7 @@ class NoopScoutingReportRepository implements ScoutingReportRepository {
   async create(
     _input: CreateScoutingReportInput,
   ): Promise<ScoutingReportRecord> {
-    throw new Error('Not implemented for form route tests');
+    throw new Error('Not implemented for tactical analysis route tests');
   }
 
   async findById(_reportId: number): Promise<ScoutingReportRecord | null> {
@@ -123,180 +123,152 @@ class NoopScoutingReportSystemsRepository implements ScoutingReportSystemsReposi
   }
 }
 
-class InMemoryScoutingReportFormRepository implements ScoutingReportFormRepository {
-  private readonly reports = new Map<number, ScoutingReportFormReportRecord>();
-  private readonly formsByReportId = new Map<number, OpponentFormRecord>();
+class NoopScoutingReportFormRepository implements ScoutingReportFormRepository {
+  async findReportById(
+    _reportId: number,
+  ): Promise<ScoutingReportFormReportRecord | null> {
+    return null;
+  }
+
+  async findFormByReportId(
+    _reportId: number,
+  ): Promise<OpponentFormRecord | null> {
+    return null;
+  }
+
+  async upsertFormByReportId(
+    _reportId: number,
+    _form: OpponentFormRecord,
+  ): Promise<OpponentFormRecord> {
+    throw new Error('Not implemented for tactical analysis route tests');
+  }
+}
+
+class InMemoryScoutingReportTacticalAnalysisRepository implements ScoutingReportTacticalAnalysisRepository {
+  private readonly reports = new Map<
+    number,
+    ScoutingReportTacticalAnalysisReportRecord
+  >();
+  private readonly itemsByReportId = new Map<
+    number,
+    TacticalAnalysisItemRecord[]
+  >();
 
   constructor(options: {
-    reports?: ScoutingReportFormReportRecord[];
-    formsByReportId?: Record<number, OpponentFormRecord>;
+    reports?: ScoutingReportTacticalAnalysisReportRecord[];
+    itemsByReportId?: Record<number, TacticalAnalysisItemRecord[]>;
   }) {
     for (const report of options.reports ?? []) {
       this.reports.set(report.id, report);
     }
 
-    for (const [reportId, form] of Object.entries(
-      options.formsByReportId ?? {},
+    for (const [reportId, items] of Object.entries(
+      options.itemsByReportId ?? {},
     )) {
-      this.formsByReportId.set(Number(reportId), form);
+      this.itemsByReportId.set(Number(reportId), [...items]);
     }
   }
 
   async findReportById(
     reportId: number,
-  ): Promise<ScoutingReportFormReportRecord | null> {
+  ): Promise<ScoutingReportTacticalAnalysisReportRecord | null> {
     return this.reports.get(reportId) ?? null;
   }
 
-  async findFormByReportId(
-    reportId: number,
-  ): Promise<OpponentFormRecord | null> {
-    return this.formsByReportId.get(reportId) ?? null;
-  }
-
-  async upsertFormByReportId(
-    reportId: number,
-    form: OpponentFormRecord,
-  ): Promise<OpponentFormRecord> {
-    this.formsByReportId.set(reportId, form);
-    return form;
-  }
-}
-
-class NoopScoutingReportTacticalAnalysisRepository implements ScoutingReportTacticalAnalysisRepository {
-  async findReportById(
-    _reportId: number,
-  ): Promise<ScoutingReportTacticalAnalysisReportRecord | null> {
-    return null;
-  }
-
   async getItemsByReportId(
-    _reportId: number,
+    reportId: number,
   ): Promise<TacticalAnalysisItemRecord[]> {
-    return [];
+    return [...(this.itemsByReportId.get(reportId) ?? [])];
   }
 
   async replaceItemsByReportId(
-    _reportId: number,
-    _items: TacticalAnalysisItemRecord[],
+    reportId: number,
+    items: TacticalAnalysisItemRecord[],
   ): Promise<void> {
-    return;
+    this.itemsByReportId.set(reportId, [...items]);
   }
 }
 
-test('create form stores MVP form fields for a report', async (t) => {
+test('save multiple tactical analysis items', async (t) => {
   const app = buildApp({
     opponentRepository: new NoopOpponentRepository(),
     scoutingReportRepository: new NoopScoutingReportRepository(),
     scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
-    scoutingReportFormRepository: new InMemoryScoutingReportFormRepository({
-      reports: [{ id: 3, status: 'draft' }],
-    }),
+    scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
     scoutingReportTacticalAnalysisRepository:
-      new NoopScoutingReportTacticalAnalysisRepository(),
+      new InMemoryScoutingReportTacticalAnalysisRepository({
+        reports: [{ id: 11, status: 'draft' }],
+      }),
   });
 
   t.after(() => app.close());
 
   const response = await app.inject({
     method: 'PUT',
-    url: '/scouting-reports/3/form',
+    url: '/scouting-reports/11/tactical-analysis',
     payload: {
-      leaguePosition: 2,
-      points: 61,
-      recentFormText: 'W-W-D-W-L',
-      notes: 'Positive run before the next fixture.',
+      items: [
+        {
+          phaseType: 'attack',
+          blockType: null,
+          narrative: 'Attacks with wide rotations and deep full-back support.',
+          keyPoints: ['Width from wingers', 'Third-man runs'],
+        },
+        {
+          phaseType: 'defense',
+          blockType: 'mid_block',
+          narrative: 'Defends in a compact mid block after losing control.',
+          keyPoints: ['Narrow central line'],
+        },
+      ],
     },
   });
 
   assert.equal(response.statusCode, 200);
   assert.deepEqual(response.json(), {
-    leaguePosition: 2,
-    points: 61,
-    recentFormText: 'W-W-D-W-L',
-    notes: 'Positive run before the next fixture.',
-  });
-});
-
-test('update form overwrites the current report form snapshot', async (t) => {
-  const repository = new InMemoryScoutingReportFormRepository({
-    reports: [{ id: 4, status: 'draft' }],
-    formsByReportId: {
-      4: {
-        leaguePosition: 6,
-        points: 44,
-        recentFormText: 'W-D-L',
-        notes: 'Old note',
+    items: [
+      {
+        phaseType: 'attack',
+        blockType: null,
+        narrative: 'Attacks with wide rotations and deep full-back support.',
+        keyPoints: ['Width from wingers', 'Third-man runs'],
       },
-    },
-  });
-
-  const app = buildApp({
-    opponentRepository: new NoopOpponentRepository(),
-    scoutingReportRepository: new NoopScoutingReportRepository(),
-    scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
-    scoutingReportFormRepository: repository,
-    scoutingReportTacticalAnalysisRepository:
-      new NoopScoutingReportTacticalAnalysisRepository(),
-  });
-
-  t.after(() => app.close());
-
-  const updateResponse = await app.inject({
-    method: 'PUT',
-    url: '/scouting-reports/4/form',
-    payload: {
-      leaguePosition: 5,
-      points: 47,
-      recentFormText: 'W-W-D-L-W',
-      notes: 'Improved momentum on the road.',
-    },
-  });
-
-  assert.equal(updateResponse.statusCode, 200);
-  assert.deepEqual(updateResponse.json(), {
-    leaguePosition: 5,
-    points: 47,
-    recentFormText: 'W-W-D-L-W',
-    notes: 'Improved momentum on the road.',
-  });
-
-  const readResponse = await app.inject({
-    method: 'GET',
-    url: '/scouting-reports/4/form',
-  });
-
-  assert.equal(readResponse.statusCode, 200);
-  assert.deepEqual(readResponse.json(), {
-    leaguePosition: 5,
-    points: 47,
-    recentFormText: 'W-W-D-L-W',
-    notes: 'Improved momentum on the road.',
+      {
+        phaseType: 'defense',
+        blockType: 'mid_block',
+        narrative: 'Defends in a compact mid block after losing control.',
+        keyPoints: ['Narrow central line'],
+      },
+    ],
   });
 });
 
-test('reject invalid form input', async (t) => {
+test('validate phaseType at route level', async (t) => {
   const app = buildApp({
     opponentRepository: new NoopOpponentRepository(),
     scoutingReportRepository: new NoopScoutingReportRepository(),
     scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
-    scoutingReportFormRepository: new InMemoryScoutingReportFormRepository({
-      reports: [{ id: 5, status: 'draft' }],
-    }),
+    scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
     scoutingReportTacticalAnalysisRepository:
-      new NoopScoutingReportTacticalAnalysisRepository(),
+      new InMemoryScoutingReportTacticalAnalysisRepository({
+        reports: [{ id: 12, status: 'draft' }],
+      }),
   });
 
   t.after(() => app.close());
 
   const response = await app.inject({
     method: 'PUT',
-    url: '/scouting-reports/5/form',
+    url: '/scouting-reports/12/tactical-analysis',
     payload: {
-      leaguePosition: 0,
-      points: 12,
-      recentFormText: 'W-W-L',
-      notes: null,
+      items: [
+        {
+          phaseType: 'build_up',
+          blockType: null,
+          narrative: 'Invalid phase type should fail validation.',
+          keyPoints: [],
+        },
+      ],
     },
   });
 
@@ -304,34 +276,71 @@ test('reject invalid form input', async (t) => {
   assert.equal(response.json().message, 'Request validation failed');
 });
 
-test('reject form update on published report', async (t) => {
+test('reject invalid blockType values', async (t) => {
   const app = buildApp({
     opponentRepository: new NoopOpponentRepository(),
     scoutingReportRepository: new NoopScoutingReportRepository(),
     scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
-    scoutingReportFormRepository: new InMemoryScoutingReportFormRepository({
-      reports: [{ id: 6, status: 'published' }],
-    }),
+    scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
     scoutingReportTacticalAnalysisRepository:
-      new NoopScoutingReportTacticalAnalysisRepository(),
+      new InMemoryScoutingReportTacticalAnalysisRepository({
+        reports: [{ id: 13, status: 'draft' }],
+      }),
   });
 
   t.after(() => app.close());
 
   const response = await app.inject({
     method: 'PUT',
-    url: '/scouting-reports/6/form',
+    url: '/scouting-reports/13/tactical-analysis',
     payload: {
-      leaguePosition: 1,
-      points: 70,
-      recentFormText: 'W-W-W-W-W',
-      notes: 'Locked after publication.',
+      items: [
+        {
+          phaseType: 'defense',
+          blockType: 'ultra_block',
+          narrative: 'Invalid block type should fail validation.',
+          keyPoints: [],
+        },
+      ],
+    },
+  });
+
+  assert.equal(response.statusCode, 400);
+  assert.equal(response.json().message, 'Request validation failed');
+});
+
+test('reject update on published report', async (t) => {
+  const app = buildApp({
+    opponentRepository: new NoopOpponentRepository(),
+    scoutingReportRepository: new NoopScoutingReportRepository(),
+    scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
+    scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
+    scoutingReportTacticalAnalysisRepository:
+      new InMemoryScoutingReportTacticalAnalysisRepository({
+        reports: [{ id: 14, status: 'published' }],
+      }),
+  });
+
+  t.after(() => app.close());
+
+  const response = await app.inject({
+    method: 'PUT',
+    url: '/scouting-reports/14/tactical-analysis',
+    payload: {
+      items: [
+        {
+          phaseType: 'attack',
+          blockType: null,
+          narrative: 'Should not be saved after publish.',
+          keyPoints: ['Locked'],
+        },
+      ],
     },
   });
 
   assert.equal(response.statusCode, 409);
   assert.equal(
     response.json().message,
-    'ScoutingReport 6 is published and cannot be modified',
+    'ScoutingReport 14 is published and cannot be modified',
   );
 });

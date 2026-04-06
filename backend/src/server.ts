@@ -4,6 +4,7 @@ import { buildApp } from './app.js';
 import { MysqlOpponentRepository } from './modules/opponents/repositories/mysql-opponent.repository.js';
 import { MysqlScoutingReportFormRepository } from './modules/scouting-report-form/repositories/mysql-scouting-report-form.repository.js';
 import { MysqlScoutingReportSystemsRepository } from './modules/scouting-report-systems/repositories/mysql-scouting-report-systems.repository.js';
+import { MysqlScoutingReportTacticalAnalysisRepository } from './modules/scouting-report-tactical-analysis/repositories/mysql-scouting-report-tactical-analysis.repository.js';
 import { MysqlScoutingReportRepository } from './modules/scouting-reports/repositories/mysql-scouting-report.repository.js';
 
 async function startServer(): Promise<void> {
@@ -23,11 +24,14 @@ async function startServer(): Promise<void> {
   const scoutingReportFormRepository = new MysqlScoutingReportFormRepository(
     pool,
   );
+  const scoutingReportTacticalAnalysisRepository =
+    new MysqlScoutingReportTacticalAnalysisRepository(pool);
   const app = buildApp({
     opponentRepository,
     scoutingReportRepository,
     scoutingReportSystemsRepository,
     scoutingReportFormRepository,
+    scoutingReportTacticalAnalysisRepository,
   });
 
   try {

@@ -5,6 +5,7 @@ import { buildApp } from '../../src/app.js';
 import type { OpponentRepository } from '../../src/modules/opponents/repositories/opponent.repository.js';
 import type { ScoutingReportFormRepository } from '../../src/modules/scouting-report-form/repositories/scouting-report-form.repository.js';
 import type { ScoutingReportSystemsRepository } from '../../src/modules/scouting-report-systems/repositories/scouting-report-systems.repository.js';
+import type { ScoutingReportTacticalAnalysisRepository } from '../../src/modules/scouting-report-tactical-analysis/repositories/scouting-report-tactical-analysis.repository.js';
 import type { ScoutingReportRepository } from '../../src/modules/scouting-reports/repositories/scouting-report.repository.js';
 import type {
   CreateOpponentInput,
@@ -29,6 +30,10 @@ import type {
   OpponentFormRecord,
   ScoutingReportFormReportRecord,
 } from '../../src/modules/scouting-report-form/types/scouting-report-form.types.js';
+import type {
+  ScoutingReportTacticalAnalysisReportRecord,
+  TacticalAnalysisItemRecord,
+} from '../../src/modules/scouting-report-tactical-analysis/types/scouting-report-tactical-analysis.types.js';
 
 interface OpponentReportFixture {
   season: number | null;
@@ -222,12 +227,35 @@ class NoopScoutingReportFormRepository implements ScoutingReportFormRepository {
   }
 }
 
+class NoopScoutingReportTacticalAnalysisRepository implements ScoutingReportTacticalAnalysisRepository {
+  async findReportById(
+    _reportId: number,
+  ): Promise<ScoutingReportTacticalAnalysisReportRecord | null> {
+    return null;
+  }
+
+  async getItemsByReportId(
+    _reportId: number,
+  ): Promise<TacticalAnalysisItemRecord[]> {
+    return [];
+  }
+
+  async replaceItemsByReportId(
+    _reportId: number,
+    _items: TacticalAnalysisItemRecord[],
+  ): Promise<void> {
+    return;
+  }
+}
+
 test('create opponent returns 201 and explicit response dto', async (t) => {
   const app = buildApp({
     opponentRepository: new InMemoryOpponentRepository(),
     scoutingReportRepository: new NoopScoutingReportRepository(),
     scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
     scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
+    scoutingReportTacticalAnalysisRepository:
+      new NoopScoutingReportTacticalAnalysisRepository(),
   });
 
   t.after(() => app.close());
@@ -259,6 +287,8 @@ test('create opponent returns 400 for invalid body', async (t) => {
     scoutingReportRepository: new NoopScoutingReportRepository(),
     scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
     scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
+    scoutingReportTacticalAnalysisRepository:
+      new NoopScoutingReportTacticalAnalysisRepository(),
   });
 
   t.after(() => app.close());
@@ -309,6 +339,8 @@ test('list opponents applies category, season, status, and search filters', asyn
     scoutingReportRepository: new NoopScoutingReportRepository(),
     scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
     scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
+    scoutingReportTacticalAnalysisRepository:
+      new NoopScoutingReportTacticalAnalysisRepository(),
   });
 
   t.after(() => app.close());

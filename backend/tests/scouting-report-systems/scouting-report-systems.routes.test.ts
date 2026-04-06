@@ -4,6 +4,7 @@ import test from 'node:test';
 import { buildApp } from '../../src/app.js';
 import type { OpponentRepository } from '../../src/modules/opponents/repositories/opponent.repository.js';
 import type { ScoutingReportFormRepository } from '../../src/modules/scouting-report-form/repositories/scouting-report-form.repository.js';
+import type { ScoutingReportTacticalAnalysisRepository } from '../../src/modules/scouting-report-tactical-analysis/repositories/scouting-report-tactical-analysis.repository.js';
 import type {
   CreateOpponentInput,
   OpponentListFilters,
@@ -29,6 +30,10 @@ import type {
   OpponentFormRecord,
   ScoutingReportFormReportRecord,
 } from '../../src/modules/scouting-report-form/types/scouting-report-form.types.js';
+import type {
+  ScoutingReportTacticalAnalysisReportRecord,
+  TacticalAnalysisItemRecord,
+} from '../../src/modules/scouting-report-tactical-analysis/types/scouting-report-tactical-analysis.types.js';
 
 class NoopOpponentRepository implements OpponentRepository {
   async create(_input: CreateOpponentInput): Promise<OpponentRecord> {
@@ -203,6 +208,27 @@ class NoopScoutingReportFormRepository implements ScoutingReportFormRepository {
   }
 }
 
+class NoopScoutingReportTacticalAnalysisRepository implements ScoutingReportTacticalAnalysisRepository {
+  async findReportById(
+    _reportId: number,
+  ): Promise<ScoutingReportTacticalAnalysisReportRecord | null> {
+    return null;
+  }
+
+  async getItemsByReportId(
+    _reportId: number,
+  ): Promise<TacticalAnalysisItemRecord[]> {
+    return [];
+  }
+
+  async replaceItemsByReportId(
+    _reportId: number,
+    _items: TacticalAnalysisItemRecord[],
+  ): Promise<void> {
+    return;
+  }
+}
+
 test('save systems stores primary and alternate systems', async (t) => {
   const app = buildApp({
     opponentRepository: new NoopOpponentRepository(),
@@ -228,6 +254,8 @@ test('save systems stores primary and alternate systems', async (t) => {
         ],
       }),
     scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
+    scoutingReportTacticalAnalysisRepository:
+      new NoopScoutingReportTacticalAnalysisRepository(),
   });
 
   t.after(() => app.close());
@@ -297,6 +325,8 @@ test('overwrite systems replaces existing selections', async (t) => {
     scoutingReportRepository: new NoopScoutingReportRepository(),
     scoutingReportSystemsRepository: repository,
     scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
+    scoutingReportTacticalAnalysisRepository:
+      new NoopScoutingReportTacticalAnalysisRepository(),
   });
 
   t.after(() => app.close());
@@ -346,6 +376,8 @@ test('reject invalid system codes', async (t) => {
         ],
       }),
     scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
+    scoutingReportTacticalAnalysisRepository:
+      new NoopScoutingReportTacticalAnalysisRepository(),
   });
 
   t.after(() => app.close());
@@ -381,6 +413,8 @@ test('reject update on published report', async (t) => {
         ],
       }),
     scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
+    scoutingReportTacticalAnalysisRepository:
+      new NoopScoutingReportTacticalAnalysisRepository(),
   });
 
   t.after(() => app.close());
