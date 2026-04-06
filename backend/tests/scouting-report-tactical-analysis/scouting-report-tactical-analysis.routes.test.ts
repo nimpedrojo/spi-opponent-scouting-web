@@ -23,10 +23,15 @@ import type {
   SystemCatalogRecord,
 } from '../../src/modules/scouting-report-systems/types/scouting-report-systems.types.js';
 import type { ScoutingReportTacticalAnalysisRepository } from '../../src/modules/scouting-report-tactical-analysis/repositories/scouting-report-tactical-analysis.repository.js';
+import type { ScoutingReportSwotRepository } from '../../src/modules/scouting-report-swot/repositories/scouting-report-swot.repository.js';
 import type {
   ScoutingReportTacticalAnalysisReportRecord,
   TacticalAnalysisItemRecord,
 } from '../../src/modules/scouting-report-tactical-analysis/types/scouting-report-tactical-analysis.types.js';
+import type {
+  ScoutingReportSwotReportRecord,
+  SwotItemRecord,
+} from '../../src/modules/scouting-report-swot/types/scouting-report-swot.types.js';
 import type { ScoutingReportRepository } from '../../src/modules/scouting-reports/repositories/scouting-report.repository.js';
 import type {
   CreateScoutingReportInput,
@@ -189,6 +194,25 @@ class InMemoryScoutingReportTacticalAnalysisRepository implements ScoutingReport
   }
 }
 
+class NoopScoutingReportSwotRepository implements ScoutingReportSwotRepository {
+  async findReportById(
+    _reportId: number,
+  ): Promise<ScoutingReportSwotReportRecord | null> {
+    return null;
+  }
+
+  async getItemsByReportId(_reportId: number): Promise<SwotItemRecord[]> {
+    return [];
+  }
+
+  async replaceItemsByReportId(
+    _reportId: number,
+    _items: SwotItemRecord[],
+  ): Promise<void> {
+    return;
+  }
+}
+
 test('save multiple tactical analysis items', async (t) => {
   const app = buildApp({
     opponentRepository: new NoopOpponentRepository(),
@@ -199,6 +223,7 @@ test('save multiple tactical analysis items', async (t) => {
       new InMemoryScoutingReportTacticalAnalysisRepository({
         reports: [{ id: 11, status: 'draft' }],
       }),
+    scoutingReportSwotRepository: new NoopScoutingReportSwotRepository(),
   });
 
   t.after(() => app.close());
@@ -253,6 +278,7 @@ test('validate phaseType at route level', async (t) => {
       new InMemoryScoutingReportTacticalAnalysisRepository({
         reports: [{ id: 12, status: 'draft' }],
       }),
+    scoutingReportSwotRepository: new NoopScoutingReportSwotRepository(),
   });
 
   t.after(() => app.close());
@@ -286,6 +312,7 @@ test('reject invalid blockType values', async (t) => {
       new InMemoryScoutingReportTacticalAnalysisRepository({
         reports: [{ id: 13, status: 'draft' }],
       }),
+    scoutingReportSwotRepository: new NoopScoutingReportSwotRepository(),
   });
 
   t.after(() => app.close());
@@ -319,6 +346,7 @@ test('reject update on published report', async (t) => {
       new InMemoryScoutingReportTacticalAnalysisRepository({
         reports: [{ id: 14, status: 'published' }],
       }),
+    scoutingReportSwotRepository: new NoopScoutingReportSwotRepository(),
   });
 
   t.after(() => app.close());

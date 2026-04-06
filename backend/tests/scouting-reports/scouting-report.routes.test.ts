@@ -6,6 +6,7 @@ import type { OpponentRepository } from '../../src/modules/opponents/repositorie
 import type { ScoutingReportFormRepository } from '../../src/modules/scouting-report-form/repositories/scouting-report-form.repository.js';
 import type { ScoutingReportSystemsRepository } from '../../src/modules/scouting-report-systems/repositories/scouting-report-systems.repository.js';
 import type { ScoutingReportTacticalAnalysisRepository } from '../../src/modules/scouting-report-tactical-analysis/repositories/scouting-report-tactical-analysis.repository.js';
+import type { ScoutingReportSwotRepository } from '../../src/modules/scouting-report-swot/repositories/scouting-report-swot.repository.js';
 import type {
   CreateOpponentInput,
   OpponentListFilters,
@@ -34,6 +35,10 @@ import type {
   ScoutingReportTacticalAnalysisReportRecord,
   TacticalAnalysisItemRecord,
 } from '../../src/modules/scouting-report-tactical-analysis/types/scouting-report-tactical-analysis.types.js';
+import type {
+  ScoutingReportSwotReportRecord,
+  SwotItemRecord,
+} from '../../src/modules/scouting-report-swot/types/scouting-report-swot.types.js';
 
 class InMemoryOpponentRepository implements OpponentRepository {
   constructor(private readonly opponents: OpponentRecord[]) {}
@@ -248,6 +253,25 @@ class NoopScoutingReportTacticalAnalysisRepository implements ScoutingReportTact
   }
 }
 
+class NoopScoutingReportSwotRepository implements ScoutingReportSwotRepository {
+  async findReportById(
+    _reportId: number,
+  ): Promise<ScoutingReportSwotReportRecord | null> {
+    return null;
+  }
+
+  async getItemsByReportId(_reportId: number): Promise<SwotItemRecord[]> {
+    return [];
+  }
+
+  async replaceItemsByReportId(
+    _reportId: number,
+    _items: SwotItemRecord[],
+  ): Promise<void> {
+    return;
+  }
+}
+
 test('create scouting report creates a draft by default', async (t) => {
   const app = buildApp({
     opponentRepository: new InMemoryOpponentRepository([]),
@@ -256,6 +280,7 @@ test('create scouting report creates a draft by default', async (t) => {
     scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
     scoutingReportTacticalAnalysisRepository:
       new NoopScoutingReportTacticalAnalysisRepository(),
+    scoutingReportSwotRepository: new NoopScoutingReportSwotRepository(),
   });
 
   t.after(() => app.close());
@@ -304,6 +329,7 @@ test('duplicate report creates a new draft version', async (t) => {
     scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
     scoutingReportTacticalAnalysisRepository:
       new NoopScoutingReportTacticalAnalysisRepository(),
+    scoutingReportSwotRepository: new NoopScoutingReportSwotRepository(),
   });
 
   t.after(() => app.close());
@@ -348,6 +374,7 @@ test('publish report is an explicit action that changes status', async (t) => {
     scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
     scoutingReportTacticalAnalysisRepository:
       new NoopScoutingReportTacticalAnalysisRepository(),
+    scoutingReportSwotRepository: new NoopScoutingReportSwotRepository(),
   });
 
   t.after(() => app.close());
@@ -384,6 +411,7 @@ test('published reports cannot be edited', async (t) => {
     scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
     scoutingReportTacticalAnalysisRepository:
       new NoopScoutingReportTacticalAnalysisRepository(),
+    scoutingReportSwotRepository: new NoopScoutingReportSwotRepository(),
   });
 
   t.after(() => app.close());
