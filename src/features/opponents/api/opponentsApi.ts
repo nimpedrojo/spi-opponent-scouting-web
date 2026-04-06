@@ -7,9 +7,8 @@ import {
 } from '@tanstack/react-query';
 
 import { apiClient, buildQueryString } from '../../../shared/api/api-client';
+import type { ScoutingReportStatus } from '../../../shared/api/domain-types';
 import { queryKeys } from '../../../shared/lib/query/query-keys';
-
-export type ScoutingReportStatus = 'draft' | 'published';
 
 export interface CreateOpponentBodyDto {
   name: string;

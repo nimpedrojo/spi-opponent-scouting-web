@@ -1,4 +1,5 @@
 import type { JSX } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import { PageHeader } from '../../../shared/ui/PageHeader';
 import { PlaceholderCard } from '../../../shared/ui/PlaceholderCard';
@@ -9,11 +10,14 @@ interface ReportEditorPlaceholderValues {
 }
 
 export function ReportEditorPage(): JSX.Element {
+  const [searchParams] = useSearchParams();
   const { register } = useAppForm<ReportEditorPlaceholderValues>({
     defaultValues: {
       opponentName: '',
     },
   });
+  const reportId = searchParams.get('reportId');
+  const opponentId = searchParams.get('opponentId');
 
   return (
     <section className="page">
@@ -22,6 +26,15 @@ export function ReportEditorPage(): JSX.Element {
         title="Report Editor"
         description="This route is prepared for section-based editing, draft saves, and explicit report status handling."
       />
+
+      {reportId !== null ? (
+        <div className="status-strip">
+          <span className="status-pill">Draft report #{reportId}</span>
+          {opponentId !== null ? (
+            <span className="status-pill">Opponent #{opponentId}</span>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="placeholder-grid">
         <PlaceholderCard
