@@ -2,6 +2,8 @@ import type { FastifyInstance } from 'fastify';
 
 import {
   EntityNotFoundError,
+  InvalidSystemCodeError,
+  InvalidSystemSelectionError,
   PublishedReportModificationError,
   RelatedEntityNotFoundError,
   ReportAlreadyPublishedError,
@@ -37,6 +39,16 @@ export function setErrorHandler(app: FastifyInstance): void {
       error instanceof ReportAlreadyPublishedError
     ) {
       reply.status(409).send({
+        message: error.message,
+      });
+      return;
+    }
+
+    if (
+      error instanceof InvalidSystemCodeError ||
+      error instanceof InvalidSystemSelectionError
+    ) {
+      reply.status(400).send({
         message: error.message,
       });
       return;

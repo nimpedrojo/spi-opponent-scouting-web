@@ -29,3 +29,15 @@ export class PublishedReportModificationError extends Error {
     super(`ScoutingReport ${reportId} is published and cannot be modified`);
   }
 }
+
+export class InvalidSystemCodeError extends Error {
+  constructor(systemCodes: string[]) {
+    super(`Invalid system codes: ${systemCodes.join(', ')}`);
+  }
+}
+
+export class InvalidSystemSelectionError extends Error {
+  constructor(message: string) {
+    super(message);
+  }
+}
