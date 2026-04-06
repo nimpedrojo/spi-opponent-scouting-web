@@ -2,6 +2,10 @@ import type { JSX } from 'react';
 import { Link } from 'react-router-dom';
 
 import type { ScoutingReportResponseDto } from '../../reports/api/reportsApi';
+import { ReportFormEditor } from './ReportFormEditor';
+import { ReportSwotEditor } from './ReportSwotEditor';
+import { ReportSystemsEditor } from './ReportSystemsEditor';
+import { ReportTacticalAnalysisEditor } from './ReportTacticalAnalysisEditor';
 import type { ReportEditorSection } from './report-editor-sections';
 
 interface ReportEditorSectionPanelProps {
@@ -13,6 +17,22 @@ export function ReportEditorSectionPanel({
   section,
   report,
 }: ReportEditorSectionPanelProps): JSX.Element {
+  if (section.id === 'form') {
+    return <ReportFormEditor report={report} />;
+  }
+
+  if (section.id === 'systems') {
+    return <ReportSystemsEditor report={report} />;
+  }
+
+  if (section.id === 'tactical-analysis') {
+    return <ReportTacticalAnalysisEditor report={report} />;
+  }
+
+  if (section.id === 'swot') {
+    return <ReportSwotEditor report={report} />;
+  }
+
   const isPreviewSection = section.id === 'preview';
   const previewHref =
     report === null
