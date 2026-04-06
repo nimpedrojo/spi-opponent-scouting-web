@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import { buildApp } from '../../src/app.js';
 import type { OpponentRepository } from '../../src/modules/opponents/repositories/opponent.repository.js';
+import type { ScoutingReportFormRepository } from '../../src/modules/scouting-report-form/repositories/scouting-report-form.repository.js';
 import type {
   CreateOpponentInput,
   OpponentListFilters,
@@ -24,6 +25,10 @@ import type {
   ScoutingReportRecord,
   UpdateScoutingReportMetadataInput,
 } from '../../src/modules/scouting-reports/types/scouting-report.types.js';
+import type {
+  OpponentFormRecord,
+  ScoutingReportFormReportRecord,
+} from '../../src/modules/scouting-report-form/types/scouting-report-form.types.js';
 
 class NoopOpponentRepository implements OpponentRepository {
   async create(_input: CreateOpponentInput): Promise<OpponentRecord> {
@@ -177,6 +182,27 @@ class InMemoryScoutingReportSystemsRepository implements ScoutingReportSystemsRe
   }
 }
 
+class NoopScoutingReportFormRepository implements ScoutingReportFormRepository {
+  async findReportById(
+    _reportId: number,
+  ): Promise<ScoutingReportFormReportRecord | null> {
+    return null;
+  }
+
+  async findFormByReportId(
+    _reportId: number,
+  ): Promise<OpponentFormRecord | null> {
+    return null;
+  }
+
+  async upsertFormByReportId(
+    _reportId: number,
+    _form: OpponentFormRecord,
+  ): Promise<OpponentFormRecord> {
+    throw new Error('Not implemented for systems route tests');
+  }
+}
+
 test('save systems stores primary and alternate systems', async (t) => {
   const app = buildApp({
     opponentRepository: new NoopOpponentRepository(),
@@ -201,6 +227,7 @@ test('save systems stores primary and alternate systems', async (t) => {
           },
         ],
       }),
+    scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
   });
 
   t.after(() => app.close());
@@ -269,6 +296,7 @@ test('overwrite systems replaces existing selections', async (t) => {
     opponentRepository: new NoopOpponentRepository(),
     scoutingReportRepository: new NoopScoutingReportRepository(),
     scoutingReportSystemsRepository: repository,
+    scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
   });
 
   t.after(() => app.close());
@@ -317,6 +345,7 @@ test('reject invalid system codes', async (t) => {
           },
         ],
       }),
+    scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
   });
 
   t.after(() => app.close());
@@ -351,6 +380,7 @@ test('reject update on published report', async (t) => {
           },
         ],
       }),
+    scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
   });
 
   t.after(() => app.close());

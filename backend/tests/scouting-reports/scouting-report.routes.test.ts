@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import { buildApp } from '../../src/app.js';
 import type { OpponentRepository } from '../../src/modules/opponents/repositories/opponent.repository.js';
+import type { ScoutingReportFormRepository } from '../../src/modules/scouting-report-form/repositories/scouting-report-form.repository.js';
 import type { ScoutingReportSystemsRepository } from '../../src/modules/scouting-report-systems/repositories/scouting-report-systems.repository.js';
 import type {
   CreateOpponentInput,
@@ -24,6 +25,10 @@ import type {
   ScoutingReportSystemsReportRecord,
   SystemCatalogRecord,
 } from '../../src/modules/scouting-report-systems/types/scouting-report-systems.types.js';
+import type {
+  OpponentFormRecord,
+  ScoutingReportFormReportRecord,
+} from '../../src/modules/scouting-report-form/types/scouting-report-form.types.js';
 
 class InMemoryOpponentRepository implements OpponentRepository {
   constructor(private readonly opponents: OpponentRecord[]) {}
@@ -196,11 +201,33 @@ class NoopScoutingReportSystemsRepository implements ScoutingReportSystemsReposi
   }
 }
 
+class NoopScoutingReportFormRepository implements ScoutingReportFormRepository {
+  async findReportById(
+    _reportId: number,
+  ): Promise<ScoutingReportFormReportRecord | null> {
+    return null;
+  }
+
+  async findFormByReportId(
+    _reportId: number,
+  ): Promise<OpponentFormRecord | null> {
+    return null;
+  }
+
+  async upsertFormByReportId(
+    _reportId: number,
+    _form: OpponentFormRecord,
+  ): Promise<OpponentFormRecord> {
+    throw new Error('Not implemented for scouting report route tests');
+  }
+}
+
 test('create scouting report creates a draft by default', async (t) => {
   const app = buildApp({
     opponentRepository: new InMemoryOpponentRepository([]),
     scoutingReportRepository: new InMemoryScoutingReportRepository([], [7]),
     scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
+    scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
   });
 
   t.after(() => app.close());
@@ -246,6 +273,7 @@ test('duplicate report creates a new draft version', async (t) => {
       [3],
     ),
     scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
+    scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
   });
 
   t.after(() => app.close());
@@ -287,6 +315,7 @@ test('publish report is an explicit action that changes status', async (t) => {
       [4],
     ),
     scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
+    scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
   });
 
   t.after(() => app.close());
@@ -320,6 +349,7 @@ test('published reports cannot be edited', async (t) => {
       [2, 8],
     ),
     scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
+    scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
   });
 
   t.after(() => app.close());

@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import { buildApp } from '../../src/app.js';
 import type { OpponentRepository } from '../../src/modules/opponents/repositories/opponent.repository.js';
+import type { ScoutingReportFormRepository } from '../../src/modules/scouting-report-form/repositories/scouting-report-form.repository.js';
 import type { ScoutingReportSystemsRepository } from '../../src/modules/scouting-report-systems/repositories/scouting-report-systems.repository.js';
 import type { ScoutingReportRepository } from '../../src/modules/scouting-reports/repositories/scouting-report.repository.js';
 import type {
@@ -24,6 +25,10 @@ import type {
   ScoutingReportSystemsReportRecord,
   SystemCatalogRecord,
 } from '../../src/modules/scouting-report-systems/types/scouting-report-systems.types.js';
+import type {
+  OpponentFormRecord,
+  ScoutingReportFormReportRecord,
+} from '../../src/modules/scouting-report-form/types/scouting-report-form.types.js';
 
 interface OpponentReportFixture {
   season: number | null;
@@ -196,11 +201,33 @@ class NoopScoutingReportSystemsRepository implements ScoutingReportSystemsReposi
   }
 }
 
+class NoopScoutingReportFormRepository implements ScoutingReportFormRepository {
+  async findReportById(
+    _reportId: number,
+  ): Promise<ScoutingReportFormReportRecord | null> {
+    return null;
+  }
+
+  async findFormByReportId(
+    _reportId: number,
+  ): Promise<OpponentFormRecord | null> {
+    return null;
+  }
+
+  async upsertFormByReportId(
+    _reportId: number,
+    _form: OpponentFormRecord,
+  ): Promise<OpponentFormRecord> {
+    throw new Error('Not implemented for opponent route tests');
+  }
+}
+
 test('create opponent returns 201 and explicit response dto', async (t) => {
   const app = buildApp({
     opponentRepository: new InMemoryOpponentRepository(),
     scoutingReportRepository: new NoopScoutingReportRepository(),
     scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
+    scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
   });
 
   t.after(() => app.close());
@@ -231,6 +258,7 @@ test('create opponent returns 400 for invalid body', async (t) => {
     opponentRepository: new InMemoryOpponentRepository(),
     scoutingReportRepository: new NoopScoutingReportRepository(),
     scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
+    scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
   });
 
   t.after(() => app.close());
@@ -280,6 +308,7 @@ test('list opponents applies category, season, status, and search filters', asyn
     ]),
     scoutingReportRepository: new NoopScoutingReportRepository(),
     scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
+    scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
   });
 
   t.after(() => app.close());
