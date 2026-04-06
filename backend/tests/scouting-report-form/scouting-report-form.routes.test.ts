@@ -363,3 +363,35 @@ test('reject form update on published report', async (t) => {
     'ScoutingReport 6 is published and cannot be modified',
   );
 });
+
+test('published report form can still be read', async (t) => {
+  const app = buildApp({
+    opponentRepository: new NoopOpponentRepository(),
+    scoutingReportRepository: new NoopScoutingReportRepository(),
+    scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
+    scoutingReportFormRepository: new InMemoryScoutingReportFormRepository({
+      reports: [{ id: 7, status: 'published' }],
+      formsByReportId: {
+        7: {
+          leaguePosition: 1,
+          points: 70,
+          recentFormText: 'W-W-W-W-W',
+          notes: 'Still visible after publication.',
+        },
+      },
+    }),
+    scoutingReportTacticalAnalysisRepository:
+      new NoopScoutingReportTacticalAnalysisRepository(),
+    scoutingReportSwotRepository: new NoopScoutingReportSwotRepository(),
+  });
+
+  t.after(() => app.close());
+
+  const response = await app.inject({
+    method: 'GET',
+    url: '/scouting-reports/7/form',
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.json().leaguePosition, 1);
+});

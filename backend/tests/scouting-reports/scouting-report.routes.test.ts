@@ -430,3 +430,39 @@ test('published reports cannot be edited', async (t) => {
     'ScoutingReport 12 is published and cannot be modified',
   );
 });
+
+test('published report can still be read', async (t) => {
+  const app = buildApp({
+    opponentRepository: new InMemoryOpponentRepository([]),
+    scoutingReportRepository: new InMemoryScoutingReportRepository(
+      [
+        {
+          id: 15,
+          opponentId: 9,
+          versionNumber: 2,
+          status: 'published',
+          reportDate: new Date('2026-04-03T00:00:00.000Z'),
+          publishedAt: new Date('2026-04-05T10:00:00.000Z'),
+          createdAt: new Date('2026-04-03T09:00:00.000Z'),
+          updatedAt: new Date('2026-04-05T10:00:00.000Z'),
+        },
+      ],
+      [9],
+    ),
+    scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
+    scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
+    scoutingReportTacticalAnalysisRepository:
+      new NoopScoutingReportTacticalAnalysisRepository(),
+    scoutingReportSwotRepository: new NoopScoutingReportSwotRepository(),
+  });
+
+  t.after(() => app.close());
+
+  const response = await app.inject({
+    method: 'GET',
+    url: '/scouting-reports/15',
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.json().status, 'published');
+});

@@ -2,8 +2,8 @@ import {
   EntityNotFoundError,
   InvalidSystemCodeError,
   InvalidSystemSelectionError,
-  PublishedReportModificationError,
 } from '../../../shared/http/errors.js';
+import { ensureReportIsEditable } from '../../../shared/report-lifecycle/report-lifecycle.js';
 import type { ReplaceScoutingReportSystemsBodyDto } from '../dtos/scouting-report-systems-request.dto.js';
 import type { ScoutingReportSystemsResponseDto } from '../dtos/scouting-report-systems-response.dto.js';
 import type { ScoutingReportSystemsRepository } from '../repositories/scouting-report-systems.repository.js';
@@ -36,10 +36,7 @@ export class ScoutingReportSystemsService {
     input: ReplaceScoutingReportSystemsBodyDto,
   ): Promise<ScoutingReportSystemsResponseDto> {
     const report = await this.getExistingReport(reportId);
-
-    if (report.status === 'published') {
-      throw new PublishedReportModificationError(reportId);
-    }
+    ensureReportIsEditable(reportId, report.status);
 
     ensureDistinctSystems(input.primarySystem, input.alternateSystems);
 

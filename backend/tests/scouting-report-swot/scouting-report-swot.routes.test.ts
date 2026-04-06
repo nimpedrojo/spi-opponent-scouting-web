@@ -359,3 +359,36 @@ test('reject update on published report', async (t) => {
     'ScoutingReport 24 is published and cannot be modified',
   );
 });
+
+test('published SWOT can still be read', async (t) => {
+  const app = buildApp({
+    opponentRepository: new NoopOpponentRepository(),
+    scoutingReportRepository: new NoopScoutingReportRepository(),
+    scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
+    scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
+    scoutingReportTacticalAnalysisRepository:
+      new NoopScoutingReportTacticalAnalysisRepository(),
+    scoutingReportSwotRepository: new InMemoryScoutingReportSwotRepository({
+      reports: [{ id: 25, status: 'published' }],
+      itemsByReportId: {
+        25: [
+          {
+            swotType: 'strength',
+            description: 'Still visible in read mode.',
+            priority: 1,
+          },
+        ],
+      },
+    }),
+  });
+
+  t.after(() => app.close());
+
+  const response = await app.inject({
+    method: 'GET',
+    url: '/scouting-reports/25/swot',
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.json().items.length, 1);
+});

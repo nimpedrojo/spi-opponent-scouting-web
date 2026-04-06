@@ -462,3 +462,47 @@ test('reject update on published report', async (t) => {
     'ScoutingReport 9 is published and cannot be modified',
   );
 });
+
+test('published report systems can still be read', async (t) => {
+  const app = buildApp({
+    opponentRepository: new NoopOpponentRepository(),
+    scoutingReportRepository: new NoopScoutingReportRepository(),
+    scoutingReportSystemsRepository:
+      new InMemoryScoutingReportSystemsRepository({
+        reports: [{ id: 10, status: 'published' }],
+        catalog: [
+          {
+            id: 1,
+            systemCode: '1-4-3-3',
+            displayName: '1-4-3-3',
+            displayOrder: 1,
+            isActive: true,
+          },
+        ],
+        selectionsByReportId: {
+          10: [
+            {
+              systemCode: '1-4-3-3',
+              displayName: '1-4-3-3',
+              usageRole: 'primary',
+              displayOrder: 1,
+            },
+          ],
+        },
+      }),
+    scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
+    scoutingReportTacticalAnalysisRepository:
+      new NoopScoutingReportTacticalAnalysisRepository(),
+    scoutingReportSwotRepository: new NoopScoutingReportSwotRepository(),
+  });
+
+  t.after(() => app.close());
+
+  const response = await app.inject({
+    method: 'GET',
+    url: '/scouting-reports/10/systems',
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.json().primarySystem, '1-4-3-3');
+});

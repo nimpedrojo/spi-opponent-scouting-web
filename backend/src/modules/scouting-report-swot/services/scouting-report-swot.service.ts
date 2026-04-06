@@ -1,7 +1,5 @@
-import {
-  EntityNotFoundError,
-  PublishedReportModificationError,
-} from '../../../shared/http/errors.js';
+import { EntityNotFoundError } from '../../../shared/http/errors.js';
+import { ensureReportIsEditable } from '../../../shared/report-lifecycle/report-lifecycle.js';
 import type { ReplaceScoutingReportSwotBodyDto } from '../dtos/scouting-report-swot-request.dto.js';
 import type {
   ScoutingReportSwotResponseDto,
@@ -33,10 +31,7 @@ export class ScoutingReportSwotService {
     input: ReplaceScoutingReportSwotBodyDto,
   ): Promise<ScoutingReportSwotResponseDto> {
     const report = await this.getExistingReport(reportId);
-
-    if (report.status === 'published') {
-      throw new PublishedReportModificationError(reportId);
-    }
+    ensureReportIsEditable(reportId, report.status);
 
     const normalizedItems = input.items.map((item) => ({
       swotType: item.swotType,

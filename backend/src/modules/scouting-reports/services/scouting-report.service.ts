@@ -1,9 +1,9 @@
 import {
   EntityNotFoundError,
-  PublishedReportModificationError,
   RelatedEntityNotFoundError,
   ReportAlreadyPublishedError,
 } from '../../../shared/http/errors.js';
+import { ensureReportIsEditable } from '../../../shared/report-lifecycle/report-lifecycle.js';
 import type {
   CreateScoutingReportBodyDto,
   ListScoutingReportsQueryDto,
@@ -75,7 +75,7 @@ export class ScoutingReportService {
     input: UpdateScoutingReportBodyDto,
   ): Promise<ScoutingReportResponseDto> {
     const existingReport = await this.getExistingReport(reportId);
-    ensureDraftReport(reportId, existingReport);
+    ensureReportIsEditable(reportId, existingReport.status);
 
     const nextOpponentId = input.opponentId ?? existingReport.opponentId;
 
@@ -161,15 +161,6 @@ async function ensureOpponentExists(
       'ScoutingReport',
       opponentId,
     );
-  }
-}
-
-function ensureDraftReport(
-  reportId: number,
-  report: ScoutingReportRecord,
-): void {
-  if (report.status === 'published') {
-    throw new PublishedReportModificationError(reportId);
   }
 }
 

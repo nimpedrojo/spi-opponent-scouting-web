@@ -1,7 +1,5 @@
-import {
-  EntityNotFoundError,
-  PublishedReportModificationError,
-} from '../../../shared/http/errors.js';
+import { EntityNotFoundError } from '../../../shared/http/errors.js';
+import { ensureReportIsEditable } from '../../../shared/report-lifecycle/report-lifecycle.js';
 import type { UpsertScoutingReportFormBodyDto } from '../dtos/scouting-report-form-request.dto.js';
 import type { ScoutingReportFormResponseDto } from '../dtos/scouting-report-form-response.dto.js';
 import type { ScoutingReportFormRepository } from '../repositories/scouting-report-form.repository.js';
@@ -35,10 +33,7 @@ export class ScoutingReportFormService {
     input: UpsertScoutingReportFormBodyDto,
   ): Promise<ScoutingReportFormResponseDto> {
     const report = await this.getExistingReport(reportId);
-
-    if (report.status === 'published') {
-      throw new PublishedReportModificationError(reportId);
-    }
+    ensureReportIsEditable(reportId, report.status);
 
     const savedForm =
       await this.scoutingReportFormRepository.upsertFormByReportId(reportId, {
