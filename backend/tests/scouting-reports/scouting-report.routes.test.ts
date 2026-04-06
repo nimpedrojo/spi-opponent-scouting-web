@@ -389,6 +389,45 @@ test('publish report is an explicit action that changes status', async (t) => {
   assert.ok(typeof response.json().publishedAt === 'string');
 });
 
+test('publishing an already published report returns an explicit domain error', async (t) => {
+  const app = buildApp({
+    opponentRepository: new InMemoryOpponentRepository([]),
+    scoutingReportRepository: new InMemoryScoutingReportRepository(
+      [
+        {
+          id: 10,
+          opponentId: 4,
+          versionNumber: 1,
+          status: 'published',
+          reportDate: new Date('2026-04-02T00:00:00.000Z'),
+          publishedAt: new Date('2026-04-05T10:00:00.000Z'),
+          createdAt: new Date('2026-04-02T09:00:00.000Z'),
+          updatedAt: new Date('2026-04-05T10:00:00.000Z'),
+        },
+      ],
+      [4],
+    ),
+    scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
+    scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
+    scoutingReportTacticalAnalysisRepository:
+      new NoopScoutingReportTacticalAnalysisRepository(),
+    scoutingReportSwotRepository: new NoopScoutingReportSwotRepository(),
+  });
+
+  t.after(() => app.close());
+
+  const response = await app.inject({
+    method: 'POST',
+    url: '/scouting-reports/10/publish',
+  });
+
+  assert.equal(response.statusCode, 409);
+  assert.equal(
+    response.json().message,
+    'ScoutingReport 10 is already published',
+  );
+});
+
 test('published reports cannot be edited', async (t) => {
   const app = buildApp({
     opponentRepository: new InMemoryOpponentRepository([]),

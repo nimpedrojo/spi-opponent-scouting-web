@@ -253,6 +253,70 @@ class NoopScoutingReportSwotRepository implements ScoutingReportSwotRepository {
   }
 }
 
+test('get systems returns the saved primary and alternate systems', async (t) => {
+  const app = buildApp({
+    opponentRepository: new NoopOpponentRepository(),
+    scoutingReportRepository: new NoopScoutingReportRepository(),
+    scoutingReportSystemsRepository:
+      new InMemoryScoutingReportSystemsRepository({
+        reports: [{ id: 2, status: 'draft' }],
+        catalog: [
+          {
+            systemCode: '1-4-3-3',
+            displayName: '1-4-3-3',
+          },
+          {
+            systemCode: '1-4-4-2',
+            displayName: '1-4-4-2',
+          },
+          {
+            systemCode: '1-3-5-2',
+            displayName: '1-3-5-2',
+          },
+        ],
+        selectionsByReportId: {
+          2: [
+            {
+              systemCode: '1-4-3-3',
+              displayName: '1-4-3-3',
+              usageRole: 'primary',
+              displayOrder: 1,
+            },
+            {
+              systemCode: '1-4-4-2',
+              displayName: '1-4-4-2',
+              usageRole: 'secondary',
+              displayOrder: 1,
+            },
+            {
+              systemCode: '1-3-5-2',
+              displayName: '1-3-5-2',
+              usageRole: 'secondary',
+              displayOrder: 2,
+            },
+          ],
+        },
+      }),
+    scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
+    scoutingReportTacticalAnalysisRepository:
+      new NoopScoutingReportTacticalAnalysisRepository(),
+    scoutingReportSwotRepository: new NoopScoutingReportSwotRepository(),
+  });
+
+  t.after(() => app.close());
+
+  const response = await app.inject({
+    method: 'GET',
+    url: '/scouting-reports/2/systems',
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(response.json(), {
+    primarySystem: '1-4-3-3',
+    alternateSystems: ['1-4-4-2', '1-3-5-2'],
+  });
+});
+
 test('save systems stores primary and alternate systems', async (t) => {
   const app = buildApp({
     opponentRepository: new NoopOpponentRepository(),
