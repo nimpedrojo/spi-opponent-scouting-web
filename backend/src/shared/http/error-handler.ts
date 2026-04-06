@@ -1,6 +1,12 @@
 import type { FastifyInstance } from 'fastify';
 
-import { EntityNotFoundError, RequestValidationError } from './errors.js';
+import {
+  EntityNotFoundError,
+  PublishedReportModificationError,
+  RelatedEntityNotFoundError,
+  ReportAlreadyPublishedError,
+  RequestValidationError,
+} from './errors.js';
 
 export function setErrorHandler(app: FastifyInstance): void {
   app.setErrorHandler((error, _request, reply) => {
@@ -14,6 +20,23 @@ export function setErrorHandler(app: FastifyInstance): void {
 
     if (error instanceof EntityNotFoundError) {
       reply.status(404).send({
+        message: error.message,
+      });
+      return;
+    }
+
+    if (error instanceof RelatedEntityNotFoundError) {
+      reply.status(404).send({
+        message: error.message,
+      });
+      return;
+    }
+
+    if (
+      error instanceof PublishedReportModificationError ||
+      error instanceof ReportAlreadyPublishedError
+    ) {
+      reply.status(409).send({
         message: error.message,
       });
       return;

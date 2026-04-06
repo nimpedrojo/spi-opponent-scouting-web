@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { buildApp } from '../../src/app.js';
+import type { OpponentRepository } from '../../src/modules/opponents/repositories/opponent.repository.js';
+import type { ScoutingReportRepository } from '../../src/modules/scouting-reports/repositories/scouting-report.repository.js';
 import type {
   CreateOpponentInput,
   OpponentListFilters,
@@ -9,7 +11,12 @@ import type {
   OpponentRecord,
   UpdateOpponentInput,
 } from '../../src/modules/opponents/types/opponent.types.js';
-import type { OpponentRepository } from '../../src/modules/opponents/repositories/opponent.repository.js';
+import type {
+  CreateScoutingReportInput,
+  ListScoutingReportsFilters,
+  ScoutingReportRecord,
+  UpdateScoutingReportMetadataInput,
+} from '../../src/modules/scouting-reports/types/scouting-report.types.js';
 
 interface OpponentReportFixture {
   season: number | null;
@@ -115,9 +122,50 @@ class InMemoryOpponentRepository implements OpponentRepository {
   }
 }
 
+class NoopScoutingReportRepository implements ScoutingReportRepository {
+  async create(
+    _input: CreateScoutingReportInput,
+  ): Promise<ScoutingReportRecord> {
+    throw new Error('Not implemented for opponent route tests');
+  }
+
+  async findById(_reportId: number): Promise<ScoutingReportRecord | null> {
+    return null;
+  }
+
+  async list(
+    _filters: ListScoutingReportsFilters,
+  ): Promise<ScoutingReportRecord[]> {
+    return [];
+  }
+
+  async updateMetadata(
+    _reportId: number,
+    _input: UpdateScoutingReportMetadataInput,
+  ): Promise<ScoutingReportRecord | null> {
+    return null;
+  }
+
+  async publish(
+    _reportId: number,
+    _publishedAt: Date,
+  ): Promise<ScoutingReportRecord | null> {
+    return null;
+  }
+
+  async getNextVersionNumber(_opponentId: number): Promise<number> {
+    return 1;
+  }
+
+  async opponentExists(_opponentId: number): Promise<boolean> {
+    return false;
+  }
+}
+
 test('create opponent returns 201 and explicit response dto', async (t) => {
   const app = buildApp({
     opponentRepository: new InMemoryOpponentRepository(),
+    scoutingReportRepository: new NoopScoutingReportRepository(),
   });
 
   t.after(() => app.close());
@@ -146,6 +194,7 @@ test('create opponent returns 201 and explicit response dto', async (t) => {
 test('create opponent returns 400 for invalid body', async (t) => {
   const app = buildApp({
     opponentRepository: new InMemoryOpponentRepository(),
+    scoutingReportRepository: new NoopScoutingReportRepository(),
   });
 
   t.after(() => app.close());
@@ -193,6 +242,7 @@ test('list opponents applies category, season, status, and search filters', asyn
         reports: [{ season: 2025, status: 'published' }],
       },
     ]),
+    scoutingReportRepository: new NoopScoutingReportRepository(),
   });
 
   t.after(() => app.close());
