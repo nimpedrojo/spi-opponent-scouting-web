@@ -134,6 +134,13 @@ select {
   align-items: start;
 }
 
+.editor-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
 .page-header {
   display: flex;
   flex-direction: column;
@@ -207,6 +214,24 @@ select {
 .empty-state h3,
 .opponent-card h4 {
   margin: 0;
+}
+
+.editor-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.editor-header__identity {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.editor-header__identity h3 {
+  margin: 0;
+  font-size: 1.5rem;
 }
 
 .filter-grid {
@@ -308,6 +333,63 @@ select {
   gap: 0.85rem;
 }
 
+.editor-sidebar {
+  position: sticky;
+  top: 2rem;
+}
+
+.editor-sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.editor-sidebar__link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  width: 100%;
+  padding: 0.9rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: transparent;
+  color: #10231a;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.editor-sidebar__link:hover {
+  background: rgba(53, 100, 75, 0.06);
+  border-color: rgba(53, 100, 75, 0.12);
+  transform: translateX(2px);
+}
+
+.editor-sidebar__link--active {
+  background: #163726;
+  color: #f7faf8;
+}
+
+.editor-sidebar__link small {
+  color: inherit;
+  opacity: 0.78;
+}
+
+.editor-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.editor-section-placeholder {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 .opponent-card {
   display: flex;
   align-items: center;
@@ -404,6 +486,10 @@ select {
     grid-template-columns: 1fr;
   }
 
+  .editor-layout {
+    grid-template-columns: 1fr;
+  }
+
   .opponent-card {
     flex-direction: column;
     align-items: stretch;
@@ -420,5 +506,13 @@ select {
 
   .report-card__header {
     flex-direction: column;
+  }
+
+  .editor-header {
+    flex-direction: column;
+  }
+
+  .editor-sidebar {
+    position: static;
   }
 }

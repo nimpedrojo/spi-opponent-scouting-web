@@ -1,66 +1,78 @@
-import type { JSX } from 'react';
+import { useEffect, useMemo, useState, type JSX } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { PageHeader } from '../../../shared/ui/PageHeader';
-import { PlaceholderCard } from '../../../shared/ui/PlaceholderCard';
-import { useAppForm } from '../../../shared/forms/useAppForm';
-
-interface ReportEditorPlaceholderValues {
-  opponentName: string;
-}
+import { useOpponentQuery } from '../../opponents/api/opponentsApi';
+import { useScoutingReportQuery } from '../../reports/api/reportsApi';
+import {
+  getReportEditorSection,
+  ReportEditorSidebar,
+} from '../components/ReportEditorSidebar';
+import { ReportEditorHeader } from '../components/ReportEditorHeader';
+import { ReportEditorSectionPanel } from '../components/ReportEditorSectionPanel';
+import { reportEditorSections } from '../components/report-editor-sections';
 
 export function ReportEditorPage(): JSX.Element {
+  const defaultSection = reportEditorSections[0];
   const [searchParams] = useSearchParams();
-  const { register } = useAppForm<ReportEditorPlaceholderValues>({
-    defaultValues: {
-      opponentName: '',
-    },
-  });
-  const reportId = searchParams.get('reportId');
-  const opponentId = searchParams.get('opponentId');
+  const reportId = Number(searchParams.get('reportId') ?? '0');
+  const reportQuery = useScoutingReportQuery(reportId);
+  const report = reportQuery.data ?? null;
+  const fallbackOpponentId = Number(searchParams.get('opponentId') ?? '0');
+  const resolvedOpponentId = report?.opponentId ?? fallbackOpponentId;
+  const opponentQuery = useOpponentQuery(resolvedOpponentId);
+  const opponent = opponentQuery.data ?? null;
+  const [activeSectionId, setActiveSectionId] = useState<string>(
+    defaultSection?.id ?? 'form',
+  );
+
+  const activeSection = useMemo(
+    () => getReportEditorSection(activeSectionId) ?? defaultSection,
+    [activeSectionId, defaultSection],
+  );
+
+  useEffect(() => {
+    const nextSection = searchParams.get('section');
+
+    if (nextSection === null) {
+      return;
+    }
+
+    if (getReportEditorSection(nextSection) !== undefined) {
+      setActiveSectionId(nextSection);
+    }
+  }, [searchParams]);
 
   return (
     <section className="page">
       <PageHeader
         eyebrow="Report Workflow"
         title="Report Editor"
-        description="This route is prepared for section-based editing, draft saves, and explicit report status handling."
+        description="Section-based scouting workflow with clear report context, lifecycle visibility, and focused editing areas."
       />
 
-      {reportId !== null ? (
-        <div className="status-strip">
-          <span className="status-pill">Draft report #{reportId}</span>
-          {opponentId !== null ? (
-            <span className="status-pill">Opponent #{opponentId}</span>
-          ) : null}
-        </div>
-      ) : null}
+      <ReportEditorHeader
+        report={report}
+        opponent={opponent}
+        isLoading={reportQuery.isLoading || opponentQuery.isLoading}
+      />
 
-      <div className="placeholder-grid">
-        <PlaceholderCard
-          title="Form foundation"
-          description="React Hook Form is already wired so future report sections can be added without changing the app shell."
-        >
-          <label>
-            <span className="page-header__eyebrow">Sample field</span>
-            <input
-              {...register('opponentName')}
-              placeholder="Opponent name"
-              style={{
-                width: '100%',
-                marginTop: '0.5rem',
-                padding: '0.75rem 0.9rem',
-                borderRadius: '12px',
-                border: '1px solid rgba(16, 35, 26, 0.14)',
-                background: '#fff',
-              }}
+      <div className="editor-layout">
+        {activeSection !== undefined ? (
+          <>
+            <ReportEditorSidebar
+              activeSectionId={activeSection.id}
+              onSelectSection={setActiveSectionId}
             />
-          </label>
-        </PlaceholderCard>
-        <PlaceholderCard
-          title="Planned sections"
-          description="Use this page for systems, tactical analysis, strategy recommendations, and SWOT editing in clear modules."
-        />
+
+            <div className="editor-content">
+              <ReportEditorSectionPanel
+                section={activeSection}
+                report={report}
+              />
+            </div>
+          </>
+        ) : null}
       </div>
     </section>
   );
