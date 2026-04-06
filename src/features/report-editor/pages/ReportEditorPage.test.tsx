@@ -17,6 +17,7 @@ describe('ReportEditorPage', () => {
           id: 21,
           opponentId: 7,
           versionNumber: 1,
+          reportSource: 'scouting',
           status: 'draft',
           reportDate: '2026-04-06',
           publishedAt: null,
@@ -45,8 +46,19 @@ describe('ReportEditorPage', () => {
       },
       'GET /scouting-reports/21/systems': () =>
         Response.json({
-          primarySystem: '1-4-3-3',
-          alternateSystems: ['1-4-4-2'],
+          primarySystem: {
+            systemCode: '1-4-3-3',
+            playerPositions: [
+              { playerNumber: 1, x: 50, y: 12 },
+              { playerNumber: 2, x: 20, y: 32 },
+            ],
+          },
+          alternateSystems: [
+            {
+              systemCode: '1-4-4-2',
+              playerPositions: [{ playerNumber: 1, x: 50, y: 12 }],
+            },
+          ],
         }),
       'PUT /scouting-reports/21/systems': ({ body }) => {
         putSystems(body);
@@ -81,8 +93,9 @@ describe('ReportEditorPage', () => {
 
     await user.click(screen.getByRole('button', { name: /Sistemas/ }));
 
-    const primarySystemField =
-      await screen.findByLabelText('Sistema principal');
+    const primarySystemField = await screen.findByLabelText(
+      'Codigo del sistema principal',
+    );
     await waitFor(() => {
       expect(primarySystemField).toHaveValue('1-4-3-3');
     });
@@ -90,18 +103,25 @@ describe('ReportEditorPage', () => {
       target: { value: '1-3-5-2' },
     });
 
-    const alternateSystemsField = screen.getByLabelText(
-      'Sistemas alternativos',
-    );
-    fireEvent.change(alternateSystemsField, {
-      target: { value: '1-4-4-2\n1-5-4-1' },
+    const alternateSystemField =
+      await screen.findByLabelText('Codigo del sistema');
+    fireEvent.change(alternateSystemField, {
+      target: { value: '1-5-4-1' },
     });
     await user.click(screen.getByRole('button', { name: 'Guardar sistemas' }));
 
     await waitFor(() => {
       expect(putSystems).toHaveBeenCalledWith({
-        primarySystem: '1-3-5-2',
-        alternateSystems: ['1-4-4-2', '1-5-4-1'],
+        primarySystem: {
+          systemCode: '1-3-5-2',
+          playerPositions: expect.any(Array),
+        },
+        alternateSystems: [
+          {
+            systemCode: '1-5-4-1',
+            playerPositions: expect.any(Array),
+          },
+        ],
       });
     });
   });

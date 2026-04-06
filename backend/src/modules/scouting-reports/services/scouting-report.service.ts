@@ -37,6 +37,7 @@ export class ScoutingReportService {
     const createdReport = await this.scoutingReportRepository.create({
       opponentId: input.opponentId,
       versionNumber,
+      reportSource: input.reportSource,
       status: 'draft',
       reportDate: normalizeOptionalDate(input.reportDate),
     });
@@ -110,6 +111,7 @@ export class ScoutingReportService {
     const duplicatedReport = await this.scoutingReportRepository.create({
       opponentId: existingReport.opponentId,
       versionNumber,
+      reportSource: existingReport.reportSource,
       status: 'draft',
       reportDate: existingReport.reportDate,
     });
@@ -134,6 +136,14 @@ export class ScoutingReportService {
     }
 
     return mapScoutingReportToResponseDto(publishedReport);
+  }
+
+  async deleteReport(reportId: number): Promise<void> {
+    const deleted = await this.scoutingReportRepository.delete(reportId);
+
+    if (!deleted) {
+      throw new EntityNotFoundError('ScoutingReport', reportId);
+    }
   }
 
   private async getExistingReport(
@@ -171,6 +181,7 @@ function mapScoutingReportToResponseDto(
     id: report.id,
     opponentId: report.opponentId,
     versionNumber: report.versionNumber,
+    reportSource: report.reportSource,
     status: report.status,
     reportDate: report.reportDate?.toISOString().slice(0, 10) ?? null,
     publishedAt: report.publishedAt?.toISOString() ?? null,

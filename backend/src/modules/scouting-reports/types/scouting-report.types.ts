@@ -1,9 +1,11 @@
 export type ScoutingReportStatus = 'draft' | 'published';
+export type ScoutingReportSource = 'video_analysis' | 'scouting' | 'references';
 
 export interface ScoutingReportRecord {
   id: number;
   opponentId: number;
   versionNumber: number;
+  reportSource: ScoutingReportSource;
   status: ScoutingReportStatus;
   reportDate: Date | null;
   publishedAt: Date | null;
@@ -14,6 +16,7 @@ export interface ScoutingReportRecord {
 export interface CreateScoutingReportInput {
   opponentId: number;
   versionNumber: number;
+  reportSource: ScoutingReportSource;
   status: 'draft';
   reportDate: Date | null;
 }

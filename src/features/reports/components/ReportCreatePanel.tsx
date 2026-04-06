@@ -6,6 +6,7 @@ import { useAppForm } from '../../../shared/forms/useAppForm';
 
 interface ReportCreateFormValues {
   opponentId: string;
+  reportSource: 'video_analysis' | 'scouting' | 'references';
   reportDate: string;
 }
 
@@ -25,6 +26,7 @@ export function ReportCreatePanel({
   const { handleSubmit, register, reset } = useAppForm<ReportCreateFormValues>({
     defaultValues: {
       opponentId: '',
+      reportSource: 'scouting',
       reportDate: '',
     },
   });
@@ -34,6 +36,7 @@ export function ReportCreatePanel({
 
     await onSubmit({
       opponentId: nextOpponentId,
+      reportSource: values.reportSource,
       ...(values.reportDate.trim() === ''
         ? {}
         : { reportDate: values.reportDate }),
@@ -41,6 +44,7 @@ export function ReportCreatePanel({
 
     reset({
       opponentId: '',
+      reportSource: 'scouting',
       reportDate: '',
     });
   }
@@ -79,6 +83,15 @@ export function ReportCreatePanel({
         <label className="field">
           <span className="field__label">Fecha del informe</span>
           <input {...register('reportDate')} type="date" />
+        </label>
+
+        <label className="field">
+          <span className="field__label">Origen del informe</span>
+          <select {...register('reportSource')}>
+            <option value="video_analysis">Analisis de video</option>
+            <option value="scouting">Scouting</option>
+            <option value="references">Referencias</option>
+          </select>
         </label>
 
         <p className="muted-text">

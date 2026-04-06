@@ -36,6 +36,7 @@ describe('ReportsPage', () => {
           id: 21,
           opponentId: 7,
           versionNumber: 1,
+          reportSource: 'video_analysis',
           status: 'draft',
           reportDate: null,
           publishedAt: null,
@@ -73,6 +74,10 @@ describe('ReportsPage', () => {
       within(createReportPanel).getByLabelText('Rival'),
       '7',
     );
+    await user.selectOptions(
+      within(createReportPanel).getByLabelText('Origen del informe'),
+      'video_analysis',
+    );
     await user.click(screen.getByRole('button', { name: 'Crear informe' }));
 
     await screen.findByText('/report-editor?reportId=21&opponentId=7');
@@ -84,6 +89,7 @@ describe('ReportsPage', () => {
         id: 14,
         opponentId: 4,
         versionNumber: 2,
+        reportSource: 'scouting',
         status: 'draft',
         reportDate: '2026-04-06',
         publishedAt: null,
@@ -137,6 +143,57 @@ describe('ReportsPage', () => {
 
     await waitFor(() => {
       expect(screen.getAllByText('Publicado').length).toBeGreaterThan(0);
+    });
+  });
+
+  it('deletes a report from the list', async () => {
+    const reports: ScoutingReportResponseDto[] = [
+      {
+        id: 18,
+        opponentId: 4,
+        versionNumber: 1,
+        reportSource: 'scouting',
+        status: 'draft',
+        reportDate: '2026-04-06',
+        publishedAt: null,
+        createdAt: '2026-04-06T10:00:00.000Z',
+        updatedAt: '2026-04-06T10:00:00.000Z',
+      },
+    ];
+
+    mockFetch({
+      'GET /opponents': () =>
+        Response.json({
+          items: [
+            {
+              id: 4,
+              name: 'Valencia Demo',
+              countryName: 'Spain',
+              competitionName: 'LaLiga',
+              createdAt: '2026-04-06T10:00:00.000Z',
+              updatedAt: '2026-04-06T10:00:00.000Z',
+            },
+          ],
+        }),
+      'GET /scouting-reports': () => Response.json({ items: reports }),
+      'DELETE /scouting-reports/18': () => {
+        reports.splice(0, 1);
+        return new Response(null, { status: 204 });
+      },
+    });
+
+    renderWithRoute(<ReportsPage />, {
+      path: '/reports',
+      initialEntries: ['/reports'],
+    });
+
+    const user = userEvent.setup();
+
+    await screen.findByRole('button', { name: 'Borrar' });
+    await user.click(screen.getByRole('button', { name: 'Borrar' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('No se encontraron informes')).toBeVisible();
     });
   });
 });

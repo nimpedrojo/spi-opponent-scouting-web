@@ -1,7 +1,11 @@
-import type { ScoutingReportStatus } from '../types/scouting-report.types.js';
+import type {
+  ScoutingReportSource,
+  ScoutingReportStatus,
+} from '../types/scouting-report.types.js';
 
 export interface CreateScoutingReportBodyDto {
   opponentId: number;
+  reportSource: ScoutingReportSource;
   reportDate?: string;
 }
 

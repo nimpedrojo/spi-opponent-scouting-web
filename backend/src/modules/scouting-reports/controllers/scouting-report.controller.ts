@@ -73,4 +73,12 @@ export class ScoutingReportController {
     );
     return reply.status(200).send(report);
   }
+
+  async deleteReport(
+    request: FastifyRequest<{ Params: ScoutingReportIdParamsDto }>,
+    reply: FastifyReply,
+  ): Promise<FastifyReply> {
+    await this.scoutingReportService.deleteReport(request.params.id);
+    return reply.status(204).send();
+  }
 }

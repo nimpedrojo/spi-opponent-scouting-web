@@ -1,6 +1,9 @@
 import type { JSX } from 'react';
 
-import { getScoutingReportStatusLabel } from '../../../shared/api/domain-types';
+import {
+  getScoutingReportSourceLabel,
+  getScoutingReportStatusLabel,
+} from '../../../shared/api/domain-types';
 import type { OpponentResponseDto } from '../../opponents/api/opponentsApi';
 import type { ScoutingReportResponseDto } from '../api/reportsApi';
 
@@ -9,11 +12,12 @@ interface ReportsListSectionProps {
   opponents: OpponentResponseDto[];
   isLoading: boolean;
   activeMutationReportId: number | null;
-  activeMutationLabel: 'duplicate' | 'publish' | null;
+  activeMutationLabel: 'duplicate' | 'publish' | 'delete' | null;
   errorMessage: string | null;
   onOpenReport: (report: ScoutingReportResponseDto) => void;
   onDuplicateReport: (report: ScoutingReportResponseDto) => Promise<void>;
   onPublishReport: (report: ScoutingReportResponseDto) => Promise<void>;
+  onDeleteReport: (report: ScoutingReportResponseDto) => Promise<void>;
 }
 
 export function ReportsListSection({
@@ -26,6 +30,7 @@ export function ReportsListSection({
   onOpenReport,
   onDuplicateReport,
   onPublishReport,
+  onDeleteReport,
 }: ReportsListSectionProps): JSX.Element {
   return (
     <section className="panel">
@@ -67,6 +72,9 @@ export function ReportsListSection({
           const isPublishPending =
             activeMutationReportId === report.id &&
             activeMutationLabel === 'publish';
+          const isDeletePending =
+            activeMutationReportId === report.id &&
+            activeMutationLabel === 'delete';
           const isPublished = report.status === 'published';
 
           return (
@@ -100,6 +108,9 @@ export function ReportsListSection({
                   <span className="status-pill">
                     Rival: {opponent?.name ?? report.opponentId}
                   </span>
+                  <span className="status-pill">
+                    {getScoutingReportSourceLabel(report.reportSource)}
+                  </span>
                   {opponent?.competitionName !== null &&
                   opponent?.competitionName !== undefined ? (
                     <span className="status-pill">
@@ -132,6 +143,14 @@ export function ReportsListSection({
                   onClick={() => void onPublishReport(report)}
                 >
                   {isPublishPending ? 'Publicando...' : 'Publicar'}
+                </button>
+                <button
+                  type="button"
+                  className="button button--danger"
+                  disabled={isDeletePending}
+                  onClick={() => void onDeleteReport(report)}
+                >
+                  {isDeletePending ? 'Borrando...' : 'Borrar'}
                 </button>
               </div>
             </article>

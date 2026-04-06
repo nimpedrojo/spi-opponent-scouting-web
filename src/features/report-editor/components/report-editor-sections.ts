@@ -27,7 +27,7 @@ export const reportEditorSections: ReportEditorSection[] = [
   },
   {
     id: 'swot',
-    label: 'SWOT',
+    label: 'DAFO',
     description: 'Fortalezas, riesgos y oportunidades estructuradas.',
   },
   {

@@ -7,16 +7,22 @@ import {
 } from '@tanstack/react-query';
 
 import { apiClient } from '../../../shared/api/api-client';
+import type { PitchPlayerPositionDto } from '../../../shared/api/domain-types';
 import { queryKeys } from '../../../shared/lib/query/query-keys';
 
+export interface ScoutingReportSystemSelectionDto {
+  systemCode: string;
+  playerPositions: PitchPlayerPositionDto[];
+}
+
 export interface ReplaceScoutingReportSystemsBodyDto {
-  primarySystem: string;
-  alternateSystems: string[];
+  primarySystem: ScoutingReportSystemSelectionDto;
+  alternateSystems: ScoutingReportSystemSelectionDto[];
 }
 
 export interface ScoutingReportSystemsResponseDto {
-  primarySystem: string | null;
-  alternateSystems: string[];
+  primarySystem: ScoutingReportSystemSelectionDto | null;
+  alternateSystems: ScoutingReportSystemSelectionDto[];
 }
 
 export interface ReplaceScoutingReportSystemsMutationVariables {

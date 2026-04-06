@@ -1,6 +1,13 @@
 import { useEffect, useState, type JSX } from 'react';
 
 import { ApiError } from '../../../shared/api/api-client';
+import type { PitchPlayerPositionDto } from '../../../shared/api/domain-types';
+import {
+  createDefaultSetPiecePlayerPositions,
+  createNextSetPiecePlayerPosition,
+  normalizePitchPlayerPositions,
+} from '../../../shared/lib/pitch/pitch-player-positions';
+import { PitchPositionBoard } from '../../../shared/ui/PitchPositionBoard';
 import type { ScoutingReportResponseDto } from '../../reports/api/reportsApi';
 import {
   useReplaceScoutingReportTacticalAnalysisMutation,
@@ -10,6 +17,8 @@ import {
   type TacticalAnalysisItemResponseDto,
   type TacticalAnalysisPhaseType,
 } from '../api/tacticalAnalysisApi';
+
+const MAX_SET_PIECE_PLAYERS = 11;
 
 interface ReportTacticalAnalysisEditorProps {
   report: ScoutingReportResponseDto | null;
@@ -21,6 +30,7 @@ interface TacticalAnalysisEditorItem {
   blockType: TacticalAnalysisBlockType | '';
   narrative: string;
   keyPoints: string;
+  playerPositions: PitchPlayerPositionDto[];
 }
 
 const phaseTypeOptions: Array<{
@@ -41,6 +51,17 @@ const blockTypeOptions: Array<{
   { value: 'high_block', label: 'Bloque alto' },
   { value: 'mid_block', label: 'Bloque medio' },
   { value: 'low_block', label: 'Bloque bajo' },
+];
+
+const setPieceTypeOptions: Array<{
+  value: TacticalAnalysisBlockType;
+  label: string;
+}> = [
+  { value: 'corner', label: 'Corner' },
+  { value: 'wide_free_kick', label: 'Falta lateral' },
+  { value: 'central_free_kick', label: 'Falta central' },
+  { value: 'throw_in', label: 'Saque de banda' },
+  { value: 'other', label: 'Otro' },
 ];
 
 export function ReportTacticalAnalysisEditor({
@@ -105,6 +126,7 @@ export function ReportTacticalAnalysisEditor({
           blockType: item.blockType === '' ? null : item.blockType,
           narrative: item.narrative.trim(),
           keyPoints: parseKeyPoints(item.keyPoints),
+          playerPositions: normalizePitchPlayerPositions(item.playerPositions),
         })),
       ],
     };
@@ -208,7 +230,9 @@ export function ReportTacticalAnalysisEditor({
                 ) : null}
 
                 <label className="field">
-                  <span className="field__label">Tipo de bloque</span>
+                  <span className="field__label">
+                    {isSetPieceSection ? 'Tipo de accion' : 'Tipo de bloque'}
+                  </span>
                   <select
                     value={item.blockType}
                     disabled={isReadOnly}
@@ -216,8 +240,15 @@ export function ReportTacticalAnalysisEditor({
                       updateItem(index, 'blockType', event.target.value)
                     }
                   >
-                    <option value="">Sin tipo de bloque</option>
-                    {blockTypeOptions.map((option) => (
+                    <option value="">
+                      {isSetPieceSection
+                        ? 'Sin tipo de accion'
+                        : 'Sin tipo de bloque'}
+                    </option>
+                    {(isSetPieceSection
+                      ? setPieceTypeOptions
+                      : blockTypeOptions
+                    ).map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
                       </option>
@@ -251,6 +282,72 @@ export function ReportTacticalAnalysisEditor({
                   }
                 />
               </label>
+
+              {isSetPieceSection ? (
+                <div className="stack">
+                  <div className="panel__header">
+                    <div>
+                      <span className="page-header__eyebrow">Campograma</span>
+                      <h3>Colocacion libre de jugadores</h3>
+                    </div>
+                    {!isReadOnly ? (
+                      <button
+                        type="button"
+                        className="button button--ghost"
+                        onClick={() =>
+                          updateItem(
+                            index,
+                            'playerPositions',
+                            createDefaultSetPiecePlayerPositions(),
+                          )
+                        }
+                      >
+                        Reiniciar posiciones
+                      </button>
+                    ) : null}
+                  </div>
+
+                  <div className="pitch-board pitch-board--set-piece">
+                    <PitchPositionBoard
+                      positions={item.playerPositions}
+                      readOnly={isReadOnly}
+                      variant="half"
+                      showPlayerNumbers={false}
+                      onChange={(nextPositions) =>
+                        updateItem(index, 'playerPositions', nextPositions)
+                      }
+                    />
+                  </div>
+
+                  {!isReadOnly ? (
+                    <div className="button-row">
+                      <button
+                        type="button"
+                        className="button button--ghost"
+                        disabled={
+                          item.playerPositions.length >= MAX_SET_PIECE_PLAYERS
+                        }
+                        onClick={() =>
+                          updateItem(index, 'playerPositions', [
+                            ...item.playerPositions,
+                            createNextSetPiecePlayerPosition(
+                              item.playerPositions,
+                            ),
+                          ])
+                        }
+                      >
+                        Agregar jugador
+                      </button>
+                    </div>
+                  ) : null}
+
+                  <p className="muted-text">
+                    {item.playerPositions.length >= MAX_SET_PIECE_PLAYERS
+                      ? 'Ya has colocado los 11 jugadores disponibles.'
+                      : `Jugadores colocados: ${item.playerPositions.length} de ${MAX_SET_PIECE_PLAYERS}.`}
+                  </p>
+                </div>
+              ) : null}
             </div>
           </article>
         ))}
@@ -320,7 +417,7 @@ export function ReportTacticalAnalysisEditor({
   function updateItem(
     index: number,
     field: keyof TacticalAnalysisEditorItem,
-    value: string,
+    value: string | PitchPlayerPositionDto[],
   ): void {
     setItems((currentItems) =>
       currentItems.map((currentItem, itemIndex) =>
@@ -343,6 +440,8 @@ function createEmptyItem(
     blockType: '',
     narrative: '',
     keyPoints: '',
+    playerPositions:
+      sectionMode === 'set-piece' ? createDefaultSetPiecePlayerPositions() : [],
   };
 }
 
@@ -354,6 +453,7 @@ function mapResponseItemToEditorItem(
     blockType: item.blockType ?? '',
     narrative: item.narrative,
     keyPoints: item.keyPoints.join('\n'),
+    playerPositions: item.playerPositions,
   };
 }
 
@@ -372,12 +472,29 @@ function getPhaseTypeLabel(value: TacticalAnalysisPhaseType): string {
 
 function getBlockTypeLabel(value: TacticalAnalysisBlockType): string {
   return (
-    blockTypeOptions.find((option) => option.value === value)?.label ?? value
+    [...blockTypeOptions, ...setPieceTypeOptions].find(
+      (option) => option.value === value,
+    )?.label ?? value
   );
 }
 
 function getErrorMessage(error: Error): string {
   if (error instanceof ApiError) {
+    if (Array.isArray(error.issues) && error.issues.length > 0) {
+      const firstIssue = error.issues[0] as {
+        message?: string;
+        path?: Array<string | number>;
+      };
+
+      if (typeof firstIssue?.message === 'string') {
+        return firstIssue.message;
+      }
+
+      if (Array.isArray(firstIssue?.path) && firstIssue.path.length > 0) {
+        return `Error de validacion en ${firstIssue.path.join('.')}.`;
+      }
+    }
+
     return error.message;
   }
 

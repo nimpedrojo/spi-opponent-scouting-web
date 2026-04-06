@@ -71,7 +71,7 @@ export function ReportSwotEditor({
       <section className="panel">
         <div className="empty-state">
           <h3>No hay ningun informe seleccionado</h3>
-          <p>Abre primero un informe para editar el analisis SWOT.</p>
+          <p>Abre primero un informe para editar el analisis DAFO.</p>
         </div>
       </section>
     );
@@ -96,7 +96,7 @@ export function ReportSwotEditor({
     <section className="panel">
       <div className="panel__header">
         <div>
-          <span className="page-header__eyebrow">SWOT</span>
+          <span className="page-header__eyebrow">DAFO</span>
           <h3>Agrupado por significado tactico</h3>
         </div>
         <div className="status-strip">
@@ -111,7 +111,7 @@ export function ReportSwotEditor({
       </div>
 
       {swotQuery.isLoading ? (
-        <p className="muted-text">Cargando SWOT...</p>
+        <p className="muted-text">Cargando DAFO...</p>
       ) : null}
 
       <div className="stack">
@@ -197,7 +197,7 @@ export function ReportSwotEditor({
         ))}
 
         <p className="muted-text">
-          Manten los items cortos y especificos para que el SWOT agrupado siga
+          Manten los items cortos y especificos para que el DAFO agrupado siga
           siendo facil de revisar con el staff.
         </p>
 
@@ -220,7 +220,7 @@ export function ReportSwotEditor({
             disabled={isReadOnly || replaceSwotMutation.isPending}
             onClick={() => void handleSave()}
           >
-            {replaceSwotMutation.isPending ? 'Guardando...' : 'Guardar SWOT'}
+            {replaceSwotMutation.isPending ? 'Guardando...' : 'Guardar DAFO'}
           </button>
         </div>
       </div>

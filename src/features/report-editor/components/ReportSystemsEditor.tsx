@@ -1,28 +1,23 @@
-import { useEffect, type JSX } from 'react';
+import { useEffect, useState, type JSX } from 'react';
 
 import { ApiError } from '../../../shared/api/api-client';
-import { useAppForm } from '../../../shared/forms/useAppForm';
-import { SystemPitchDiagram } from '../../../shared/ui/SystemPitchDiagram';
+import type { PitchPlayerPositionDto } from '../../../shared/api/domain-types';
+import {
+  createFormationPlayerPositions,
+  normalizePitchPlayerPositions,
+} from '../../../shared/lib/pitch/pitch-player-positions';
+import { PitchPositionBoard } from '../../../shared/ui/PitchPositionBoard';
 import type { ScoutingReportResponseDto } from '../../reports/api/reportsApi';
 import {
   useReplaceScoutingReportSystemsMutation,
   useScoutingReportSystemsQuery,
   type ReplaceScoutingReportSystemsBodyDto,
+  type ScoutingReportSystemSelectionDto,
 } from '../api/systemsApi';
 
 interface ReportSystemsEditorProps {
   report: ScoutingReportResponseDto | null;
 }
-
-interface ReportSystemsValues {
-  primarySystem: string;
-  alternateSystems: string;
-}
-
-const emptySystemsValues: ReportSystemsValues = {
-  primarySystem: '',
-  alternateSystems: '',
-};
 
 export function ReportSystemsEditor({
   report,
@@ -31,23 +26,28 @@ export function ReportSystemsEditor({
   const isReadOnly = report?.status === 'published';
   const systemsQuery = useScoutingReportSystemsQuery(reportId);
   const replaceSystemsMutation = useReplaceScoutingReportSystemsMutation();
-  const { handleSubmit, register, reset, watch } =
-    useAppForm<ReportSystemsValues>({
-      defaultValues: emptySystemsValues,
+  const [primarySystem, setPrimarySystem] =
+    useState<ScoutingReportSystemSelectionDto>({
+      systemCode: '',
+      playerPositions: [],
     });
-  const watchedPrimarySystem = watch('primarySystem');
-  const watchedAlternateSystems = watch('alternateSystems');
+  const [alternateSystems, setAlternateSystems] = useState<
+    ScoutingReportSystemSelectionDto[]
+  >([]);
 
   useEffect(() => {
     if (systemsQuery.data === undefined) {
       return;
     }
 
-    reset({
-      primarySystem: systemsQuery.data.primarySystem ?? '',
-      alternateSystems: systemsQuery.data.alternateSystems.join('\n'),
-    });
-  }, [reset, systemsQuery.data]);
+    setPrimarySystem(
+      systemsQuery.data.primarySystem ?? {
+        systemCode: '',
+        playerPositions: [],
+      },
+    );
+    setAlternateSystems(systemsQuery.data.alternateSystems);
+  }, [systemsQuery.data]);
 
   if (report === null) {
     return (
@@ -62,10 +62,22 @@ export function ReportSystemsEditor({
 
   const activeReport = report;
 
-  async function submitForm(values: ReportSystemsValues): Promise<void> {
+  async function handleSave(): Promise<void> {
     const body: ReplaceScoutingReportSystemsBodyDto = {
-      primarySystem: values.primarySystem.trim(),
-      alternateSystems: parseAlternateSystems(values.alternateSystems),
+      primarySystem: {
+        systemCode: primarySystem.systemCode.trim(),
+        playerPositions: normalizePitchPlayerPositions(
+          primarySystem.playerPositions,
+        ),
+      },
+      alternateSystems: alternateSystems
+        .map((system) => ({
+          systemCode: system.systemCode.trim(),
+          playerPositions: normalizePitchPlayerPositions(
+            system.playerPositions,
+          ),
+        }))
+        .filter((system) => system.systemCode.length > 0),
     };
 
     const savedSystems = await replaceSystemsMutation.mutateAsync({
@@ -73,10 +85,13 @@ export function ReportSystemsEditor({
       body,
     });
 
-    reset({
-      primarySystem: savedSystems.primarySystem ?? '',
-      alternateSystems: savedSystems.alternateSystems.join('\n'),
-    });
+    setPrimarySystem(
+      savedSystems.primarySystem ?? {
+        systemCode: '',
+        playerPositions: [],
+      },
+    );
+    setAlternateSystems(savedSystems.alternateSystems);
   }
 
   return (
@@ -101,56 +116,182 @@ export function ReportSystemsEditor({
         <p className="muted-text">Cargando seccion de sistemas...</p>
       ) : null}
 
-      <form
-        className="stack"
-        onSubmit={(event) => {
-          void handleSubmit(submitForm)(event);
-        }}
-      >
-        <label className="field">
-          <span className="field__label">Sistema principal</span>
-          <input
-            {...register('primarySystem', {
-              required: 'El sistema principal es obligatorio.',
-            })}
-            placeholder="1-4-3-3"
-            disabled={isReadOnly}
-          />
-        </label>
+      <div className="stack">
+        <section className="editor-item-card">
+          <div className="panel__header">
+            <div>
+              <span className="page-header__eyebrow">Sistema principal</span>
+              <h3>
+                {primarySystem.systemCode || 'Configura la estructura base'}
+              </h3>
+            </div>
+            {!isReadOnly ? (
+              <button
+                type="button"
+                className="button button--ghost"
+                onClick={() => {
+                  setPrimarySystem((currentSystem) => ({
+                    ...currentSystem,
+                    playerPositions: createFormationPlayerPositions(
+                      currentSystem.systemCode,
+                    ),
+                  }));
+                }}
+              >
+                Recolocar jugadores
+              </button>
+            ) : null}
+          </div>
 
-        <label className="field">
-          <span className="field__label">Sistemas alternativos</span>
-          <textarea
-            {...register('alternateSystems')}
-            rows={5}
-            placeholder={'1-4-4-2\n1-3-5-2'}
-            disabled={isReadOnly}
-          />
-        </label>
+          <div className="stack">
+            <label className="field">
+              <span className="field__label">Codigo del sistema principal</span>
+              <input
+                value={primarySystem.systemCode}
+                placeholder="1-4-3-3"
+                disabled={isReadOnly}
+                onChange={(event) => {
+                  const systemCode = event.target.value;
+
+                  setPrimarySystem({
+                    systemCode,
+                    playerPositions: createFormationPlayerPositions(systemCode),
+                  });
+                }}
+              />
+            </label>
+
+            <PitchPositionBoard
+              positions={primarySystem.playerPositions}
+              readOnly={isReadOnly}
+              onChange={(nextPositions) => {
+                setPrimarySystem((currentSystem) => ({
+                  ...currentSystem,
+                  playerPositions: nextPositions,
+                }));
+              }}
+            />
+          </div>
+        </section>
+
+        <section className="editor-item-card">
+          <div className="panel__header">
+            <div>
+              <span className="page-header__eyebrow">
+                Sistemas alternativos
+              </span>
+              <h3>Variantes tacticas y ajustes posibles</h3>
+            </div>
+            {!isReadOnly ? (
+              <button
+                type="button"
+                className="button button--ghost"
+                onClick={() => {
+                  setAlternateSystems((currentSystems) => [
+                    ...currentSystems,
+                    {
+                      systemCode: '',
+                      playerPositions: [],
+                    },
+                  ]);
+                }}
+              >
+                Agregar alternativo
+              </button>
+            ) : null}
+          </div>
+
+          <div className="stack">
+            {alternateSystems.length > 0 ? (
+              alternateSystems.map((system, index) => (
+                <article key={index} className="editor-subitem">
+                  <div className="panel__header">
+                    <div>
+                      <span className="page-header__eyebrow">
+                        Alternativo {index + 1}
+                      </span>
+                      <h3>{system.systemCode || 'Sin definir'}</h3>
+                    </div>
+                    {!isReadOnly ? (
+                      <div className="button-row">
+                        <button
+                          type="button"
+                          className="button button--ghost"
+                          onClick={() => {
+                            updateAlternateSystem(index, {
+                              ...system,
+                              playerPositions: createFormationPlayerPositions(
+                                system.systemCode,
+                              ),
+                            });
+                          }}
+                        >
+                          Recolocar
+                        </button>
+                        <button
+                          type="button"
+                          className="button button--ghost"
+                          onClick={() => {
+                            setAlternateSystems((currentSystems) =>
+                              currentSystems.filter(
+                                (_, systemIndex) => systemIndex !== index,
+                              ),
+                            );
+                          }}
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <div className="stack">
+                    <label className="field">
+                      <span className="field__label">Codigo del sistema</span>
+                      <input
+                        value={system.systemCode}
+                        placeholder="1-4-4-2"
+                        disabled={isReadOnly}
+                        onChange={(event) => {
+                          const systemCode = event.target.value;
+
+                          updateAlternateSystem(index, {
+                            systemCode,
+                            playerPositions:
+                              createFormationPlayerPositions(systemCode),
+                          });
+                        }}
+                      />
+                    </label>
+
+                    <PitchPositionBoard
+                      positions={system.playerPositions}
+                      readOnly={isReadOnly}
+                      onChange={(nextPositions) => {
+                        updateAlternateSystem(index, {
+                          ...system,
+                          playerPositions: nextPositions,
+                        });
+                      }}
+                    />
+                  </div>
+                </article>
+              ))
+            ) : (
+              <div className="empty-state">
+                <p>
+                  No hay sistemas alternativos definidos. Puedes agregar uno
+                  para reflejar variantes de partido.
+                </p>
+              </div>
+            )}
+          </div>
+        </section>
 
         <p className="muted-text">
-          Agrega un sistema alternativo por linea. El backend valida cada codigo
-          contra el catalogo.
+          Puedes arrastrar libremente los jugadores en cada campograma para
+          ajustar la estructura real observada.
         </p>
-
-        <div className="system-diagram-grid">
-          <SystemPitchDiagram
-            title="Sistema principal"
-            subtitle="Campograma"
-            systemCode={watchedPrimarySystem ?? ''}
-          />
-
-          {parseAlternateSystems(watchedAlternateSystems ?? '').map(
-            (systemCode, index) => (
-              <SystemPitchDiagram
-                key={`${systemCode}-${index}`}
-                title={`Alternativo ${index + 1}`}
-                subtitle="Campograma"
-                systemCode={systemCode}
-              />
-            ),
-          )}
-        </div>
 
         {systemsQuery.error instanceof Error ? (
           <p className="feedback-message feedback-message--error">
@@ -166,25 +307,34 @@ export function ReportSystemsEditor({
 
         <div className="button-row">
           <button
-            type="submit"
+            type="button"
             className="button"
-            disabled={isReadOnly || replaceSystemsMutation.isPending}
+            disabled={
+              isReadOnly ||
+              replaceSystemsMutation.isPending ||
+              primarySystem.systemCode.trim().length === 0
+            }
+            onClick={() => void handleSave()}
           >
             {replaceSystemsMutation.isPending
               ? 'Guardando...'
               : 'Guardar sistemas'}
           </button>
         </div>
-      </form>
+      </div>
     </section>
   );
-}
 
-function parseAlternateSystems(value: string): string[] {
-  return value
-    .split('\n')
-    .map((entry) => entry.trim())
-    .filter((entry) => entry.length > 0);
+  function updateAlternateSystem(
+    index: number,
+    nextSystem: ScoutingReportSystemSelectionDto,
+  ): void {
+    setAlternateSystems((currentSystems) =>
+      currentSystems.map((currentSystem, systemIndex) =>
+        systemIndex === index ? nextSystem : currentSystem,
+      ),
+    );
+  }
 }
 
 function getErrorMessage(error: Error): string {

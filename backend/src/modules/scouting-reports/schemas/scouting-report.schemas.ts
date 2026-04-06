@@ -4,6 +4,7 @@ const optionalDateString = z.string().date().optional();
 
 export const createScoutingReportBodySchema = z.object({
   opponentId: z.coerce.number().int().positive(),
+  reportSource: z.enum(['video_analysis', 'scouting', 'references']),
   reportDate: optionalDateString,
 });
 

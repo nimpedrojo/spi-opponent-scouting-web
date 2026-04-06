@@ -7,6 +7,7 @@ import { ensureReportIsEditable } from '../../../shared/report-lifecycle/report-
 import type { ReplaceScoutingReportSystemsBodyDto } from '../dtos/scouting-report-systems-request.dto.js';
 import type { ScoutingReportSystemsResponseDto } from '../dtos/scouting-report-systems-response.dto.js';
 import type { ScoutingReportSystemsRepository } from '../repositories/scouting-report-systems.repository.js';
+import type { PitchPlayerPosition } from '../../../shared/pitch/pitch-player-position.js';
 
 export class ScoutingReportSystemsService {
   constructor(
@@ -22,12 +23,14 @@ export class ScoutingReportSystemsService {
       await this.scoutingReportSystemsRepository.getSystemsForReport(reportId);
 
     return {
-      primarySystem:
-        selections.find((selection) => selection.usageRole === 'primary')
-          ?.systemCode ?? null,
+      primarySystem: mapSelectionToResponseDto(
+        selections.find((selection) => selection.usageRole === 'primary') ??
+          null,
+      ),
       alternateSystems: selections
         .filter((selection) => selection.usageRole === 'secondary')
-        .map((selection) => selection.systemCode),
+        .map(mapSelectionToResponseDto)
+        .filter((selection) => selection !== null),
     };
   }
 
@@ -41,8 +44,8 @@ export class ScoutingReportSystemsService {
     ensureDistinctSystems(input.primarySystem, input.alternateSystems);
 
     const requestedSystemCodes = [
-      input.primarySystem,
-      ...input.alternateSystems,
+      input.primarySystem.systemCode,
+      ...input.alternateSystems.map((system) => system.systemCode),
     ];
     const catalogSystems =
       await this.scoutingReportSystemsRepository.findCatalogSystemsByCodes(
@@ -62,8 +65,16 @@ export class ScoutingReportSystemsService {
     await this.scoutingReportSystemsRepository.replaceSystemsForReport(
       reportId,
       {
-        primarySystemCode: input.primarySystem,
-        alternateSystemCodes: input.alternateSystems,
+        primarySystem: {
+          systemCode: input.primarySystem.systemCode,
+          playerPositions: normalizePlayerPositions(
+            input.primarySystem.playerPositions,
+          ),
+        },
+        alternateSystems: input.alternateSystems.map((system) => ({
+          systemCode: system.systemCode,
+          playerPositions: normalizePlayerPositions(system.playerPositions),
+        })),
       },
     );
 
@@ -83,24 +94,58 @@ export class ScoutingReportSystemsService {
 }
 
 function ensureDistinctSystems(
-  primarySystem: string,
-  alternateSystems: string[],
+  primarySystem: ReplaceScoutingReportSystemsBodyDto['primarySystem'],
+  alternateSystems: ReplaceScoutingReportSystemsBodyDto['alternateSystems'],
 ): void {
+  const primarySystemCode = primarySystem.systemCode;
+  const alternateSystemCodes = alternateSystems.map(
+    (system) => system.systemCode,
+  );
   const duplicateAlternateSystems = alternateSystems.filter(
-    (systemCode, index) => alternateSystems.indexOf(systemCode) !== index,
+    (system, index) =>
+      alternateSystemCodes.indexOf(system.systemCode) !== index,
   );
 
   if (duplicateAlternateSystems.length > 0) {
     throw new InvalidSystemSelectionError(
       `Duplicate alternate systems are not allowed: ${[
-        ...new Set(duplicateAlternateSystems),
+        ...new Set(
+          duplicateAlternateSystems.map((system) => system.systemCode),
+        ),
       ].join(', ')}`,
     );
   }
 
-  if (alternateSystems.includes(primarySystem)) {
+  if (alternateSystemCodes.includes(primarySystemCode)) {
     throw new InvalidSystemSelectionError(
       'Primary system cannot also appear in alternateSystems',
     );
   }
+}
+
+function mapSelectionToResponseDto(
+  selection:
+    | Awaited<
+        ReturnType<ScoutingReportSystemsRepository['getSystemsForReport']>
+      >[number]
+    | null,
+) {
+  if (selection === null) {
+    return null;
+  }
+
+  return {
+    systemCode: selection.systemCode,
+    playerPositions: selection.playerPositions,
+  };
+}
+
+function normalizePlayerPositions(
+  playerPositions: PitchPlayerPosition[],
+): PitchPlayerPosition[] {
+  return playerPositions.map((position) => ({
+    playerNumber: position.playerNumber,
+    x: position.x,
+    y: position.y,
+  }));
 }

@@ -15,11 +15,12 @@ interface ScoutingReportRow extends DatabaseRow {
   id: number;
   opponent_id: number;
   version_number: number;
+  report_source: 'video_analysis' | 'scouting' | 'references';
   status: 'draft' | 'published';
-  report_date: Date | null;
-  published_at: Date | null;
-  created_at: Date;
-  updated_at: Date;
+  report_date: Date | string | null;
+  published_at: Date | string | null;
+  created_at: Date | string;
+  updated_at: Date | string;
 }
 
 interface AggregateRow extends DatabaseRow {
@@ -38,11 +39,18 @@ export class MysqlScoutingReportRepository implements ScoutingReportRepository {
         INSERT INTO scouting_reports (
           opponent_id,
           version_number,
+          report_source,
           status,
           report_date
-        ) VALUES (?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?)
       `,
-      [input.opponentId, input.versionNumber, input.status, input.reportDate],
+      [
+        input.opponentId,
+        input.versionNumber,
+        input.reportSource,
+        input.status,
+        input.reportDate,
+      ],
     );
 
     const createdReport = await this.findById(Number(result.insertId));
@@ -61,6 +69,7 @@ export class MysqlScoutingReportRepository implements ScoutingReportRepository {
           sr.id,
           sr.opponent_id,
           sr.version_number,
+          sr.report_source,
           sr.status,
           sr.report_date,
           sr.published_at,
@@ -108,6 +117,7 @@ export class MysqlScoutingReportRepository implements ScoutingReportRepository {
           sr.id,
           sr.opponent_id,
           sr.version_number,
+          sr.report_source,
           sr.status,
           sr.report_date,
           sr.published_at,
@@ -121,6 +131,18 @@ export class MysqlScoutingReportRepository implements ScoutingReportRepository {
     );
 
     return rows.map(mapScoutingReportRow);
+  }
+
+  async delete(reportId: number): Promise<boolean> {
+    const [result] = await this.databasePool.execute<DatabaseMutationResult>(
+      `
+        DELETE FROM scouting_reports
+        WHERE id = ?
+      `,
+      [reportId],
+    );
+
+    return result.affectedRows > 0;
   }
 
   async updateMetadata(
@@ -203,10 +225,23 @@ function mapScoutingReportRow(row: ScoutingReportRow): ScoutingReportRecord {
     id: row.id,
     opponentId: row.opponent_id,
     versionNumber: row.version_number,
+    reportSource: row.report_source,
     status: row.status,
-    reportDate: row.report_date,
-    publishedAt: row.published_at,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    reportDate: normalizeNullableDateValue(row.report_date),
+    publishedAt: normalizeNullableDateValue(row.published_at),
+    createdAt: normalizeDateValue(row.created_at),
+    updatedAt: normalizeDateValue(row.updated_at),
   };
+}
+
+function normalizeNullableDateValue(value: Date | string | null): Date | null {
+  if (value === null) {
+    return null;
+  }
+
+  return normalizeDateValue(value);
+}
+
+function normalizeDateValue(value: Date | string): Date {
+  return value instanceof Date ? value : new Date(value);
 }

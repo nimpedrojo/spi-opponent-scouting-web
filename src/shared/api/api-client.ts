@@ -96,15 +96,27 @@ export class ApiClient {
     });
   }
 
+  async delete<TResponse = void>(
+    path: string,
+    options?: ApiRequestOptions,
+  ): Promise<TResponse> {
+    return this.request<TResponse>(path, {
+      ...options,
+      method: 'DELETE',
+    });
+  }
+
   private async request<TResponse>(
     path: string,
     options?: ApiRequestOptions,
   ): Promise<TResponse> {
+    const hasBody = options?.body !== undefined;
+
     const response = await fetch(`${this.baseUrl}${path}`, {
       ...options,
       headers: {
         Accept: 'application/json',
-        'Content-Type': 'application/json',
+        ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
         ...options?.headers,
       },
     });

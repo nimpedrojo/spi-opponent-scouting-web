@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-query';
 
 import { apiClient } from '../../../shared/api/api-client';
+import type { PitchPlayerPositionDto } from '../../../shared/api/domain-types';
 import { queryKeys } from '../../../shared/lib/query/query-keys';
 
 export type TacticalAnalysisPhaseType =
@@ -19,13 +20,19 @@ export type TacticalAnalysisPhaseType =
 export type TacticalAnalysisBlockType =
   | 'high_block'
   | 'mid_block'
-  | 'low_block';
+  | 'low_block'
+  | 'corner'
+  | 'wide_free_kick'
+  | 'central_free_kick'
+  | 'throw_in'
+  | 'other';
 
 export interface UpsertTacticalAnalysisItemDto {
   phaseType: TacticalAnalysisPhaseType;
   blockType: TacticalAnalysisBlockType | null;
   narrative: string;
   keyPoints?: string[];
+  playerPositions?: PitchPlayerPositionDto[];
 }
 
 export interface ReplaceScoutingReportTacticalAnalysisBodyDto {
@@ -37,6 +44,7 @@ export interface TacticalAnalysisItemResponseDto {
   blockType: TacticalAnalysisBlockType | null;
   narrative: string;
   keyPoints: string[];
+  playerPositions: PitchPlayerPositionDto[];
 }
 
 export interface ScoutingReportTacticalAnalysisResponseDto {

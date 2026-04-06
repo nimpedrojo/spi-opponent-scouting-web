@@ -1,23 +1,26 @@
 import type { JSX } from 'react';
 
+import type { PitchPlayerPositionDto } from '../api/domain-types';
+import { createFormationPlayerPositions } from '../lib/pitch/pitch-player-positions';
+import { PitchPositionBoard } from './PitchPositionBoard';
+
 interface SystemPitchDiagramProps {
   systemCode: string | null;
   title: string;
   subtitle?: string;
-}
-
-interface PlayerMarker {
-  id: string;
-  left: number;
-  top: number;
+  playerPositions?: PitchPlayerPositionDto[];
 }
 
 export function SystemPitchDiagram({
   systemCode,
   title,
   subtitle,
+  playerPositions,
 }: SystemPitchDiagramProps): JSX.Element {
-  const formationLines = parseSystemCode(systemCode);
+  const resolvedPlayerPositions =
+    playerPositions !== undefined && playerPositions.length > 0
+      ? playerPositions
+      : createFormationPlayerPositions(systemCode);
 
   return (
     <article className="system-diagram-card">
@@ -31,7 +34,7 @@ export function SystemPitchDiagram({
         ) : null}
       </div>
 
-      {formationLines === null ? (
+      {resolvedPlayerPositions.length === 0 ? (
         <div className="empty-state">
           <p>
             Introduce un sistema valido para mostrar el campograma de esta
@@ -39,72 +42,8 @@ export function SystemPitchDiagram({
           </p>
         </div>
       ) : (
-        <div className="system-pitch">
-          <div className="system-pitch__surface">
-            <div className="system-pitch__line system-pitch__line--outline" />
-            <div className="system-pitch__line system-pitch__line--halfway" />
-            <div className="system-pitch__circle" />
-            <div className="system-pitch__box system-pitch__box--top" />
-            <div className="system-pitch__box system-pitch__box--bottom" />
-
-            {createPlayerMarkers(formationLines).map((player) => (
-              <span
-                key={player.id}
-                className="system-pitch__player"
-                style={{
-                  left: `${player.left}%`,
-                  top: `${player.top}%`,
-                }}
-              />
-            ))}
-          </div>
-        </div>
+        <PitchPositionBoard positions={resolvedPlayerPositions} />
       )}
     </article>
   );
-}
-
-function parseSystemCode(systemCode: string | null): number[] | null {
-  if (systemCode === null) {
-    return null;
-  }
-
-  const normalizedValue = systemCode.trim();
-
-  if (normalizedValue.length === 0) {
-    return null;
-  }
-
-  const segments = normalizedValue.split('-').map((segment) => Number(segment));
-
-  if (
-    segments.length < 2 ||
-    segments.some((segment) => Number.isNaN(segment) || segment <= 0)
-  ) {
-    return null;
-  }
-
-  return segments;
-}
-
-function createPlayerMarkers(formationLines: number[]): PlayerMarker[] {
-  const markers: PlayerMarker[] = [];
-  const rowCount = formationLines.length;
-
-  formationLines.forEach((playerCount, rowIndex) => {
-    const top = rowCount === 1 ? 50 : 12 + (rowIndex * 76) / (rowCount - 1);
-
-    for (let playerIndex = 0; playerIndex < playerCount; playerIndex += 1) {
-      const left =
-        playerCount === 1 ? 50 : 14 + (playerIndex * 72) / (playerCount - 1);
-
-      markers.push({
-        id: `${rowIndex}-${playerIndex}`,
-        left,
-        top,
-      });
-    }
-  });
-
-  return markers;
 }

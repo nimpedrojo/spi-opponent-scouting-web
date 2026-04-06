@@ -9,6 +9,7 @@ export interface ScoutingReportRepository {
   create(input: CreateScoutingReportInput): Promise<ScoutingReportRecord>;
   findById(reportId: number): Promise<ScoutingReportRecord | null>;
   list(filters: ListScoutingReportsFilters): Promise<ScoutingReportRecord[]>;
+  delete(reportId: number): Promise<boolean>;
   updateMetadata(
     reportId: number,
     input: UpdateScoutingReportMetadataInput,

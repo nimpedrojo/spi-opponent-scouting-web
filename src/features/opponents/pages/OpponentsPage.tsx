@@ -75,6 +75,7 @@ export function OpponentsPage(): JSX.Element {
     try {
       const report = await createScoutingReportMutation.mutateAsync({
         opponentId: opponent.id,
+        reportSource: 'scouting',
       });
 
       void navigate(

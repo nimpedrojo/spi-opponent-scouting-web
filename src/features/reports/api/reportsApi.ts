@@ -7,11 +7,15 @@ import {
 } from '@tanstack/react-query';
 
 import { apiClient, buildQueryString } from '../../../shared/api/api-client';
-import type { ScoutingReportStatus } from '../../../shared/api/domain-types';
+import type {
+  ScoutingReportSource,
+  ScoutingReportStatus,
+} from '../../../shared/api/domain-types';
 import { queryKeys } from '../../../shared/lib/query/query-keys';
 
 export interface CreateScoutingReportBodyDto {
   opponentId: number;
+  reportSource: ScoutingReportSource;
   reportDate?: string;
 }
 
@@ -30,6 +34,7 @@ export interface ScoutingReportResponseDto {
   id: number;
   opponentId: number;
   versionNumber: number;
+  reportSource: ScoutingReportSource;
   status: ScoutingReportStatus;
   reportDate: string | null;
   publishedAt: string | null;
@@ -95,6 +100,10 @@ export function publishScoutingReport(
   return apiClient.post<ScoutingReportResponseDto>(
     `/scouting-reports/${reportId}/publish`,
   );
+}
+
+export function deleteScoutingReport(reportId: number): Promise<void> {
+  return apiClient.delete(`/scouting-reports/${reportId}`);
 }
 
 export function useScoutingReportsQuery(
@@ -189,6 +198,26 @@ export function usePublishScoutingReportMutation(): UseMutationResult<
         queryKeys.scoutingReports.detail(publishedReport.id),
         publishedReport,
       );
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.scoutingReports.lists(),
+      });
+    },
+  });
+}
+
+export function useDeleteScoutingReportMutation(): UseMutationResult<
+  void,
+  Error,
+  number
+> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteScoutingReport,
+    onSuccess: (_value, deletedReportId) => {
+      queryClient.removeQueries({
+        queryKey: queryKeys.scoutingReports.detail(deletedReportId),
+      });
       void queryClient.invalidateQueries({
         queryKey: queryKeys.scoutingReports.lists(),
       });

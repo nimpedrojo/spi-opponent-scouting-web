@@ -1,4 +1,5 @@
 import type { ScoutingReportStatus } from '../../scouting-reports/types/scouting-report.types.js';
+import type { PitchPlayerPosition } from '../../../shared/pitch/pitch-player-position.js';
 
 export interface ScoutingReportSystemsReportRecord {
   id: number;
@@ -18,9 +19,15 @@ export interface ScoutingReportSystemSelectionRecord {
   displayName: string;
   usageRole: 'primary' | 'secondary';
   displayOrder: number;
+  playerPositions: PitchPlayerPosition[];
 }
 
 export interface ReplaceScoutingReportSystemsInput {
-  primarySystemCode: string;
-  alternateSystemCodes: string[];
+  primarySystem: ReplaceScoutingReportSystemSelectionInput;
+  alternateSystems: ReplaceScoutingReportSystemSelectionInput[];
+}
+
+export interface ReplaceScoutingReportSystemSelectionInput {
+  systemCode: string;
+  playerPositions: PitchPlayerPosition[];
 }

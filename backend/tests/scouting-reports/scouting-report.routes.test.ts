@@ -91,6 +91,7 @@ class InMemoryScoutingReportRepository implements ScoutingReportRepository {
       id: this.nextId++,
       opponentId: input.opponentId,
       versionNumber: input.versionNumber,
+      reportSource: input.reportSource,
       status: input.status,
       reportDate: input.reportDate,
       publishedAt: null,
@@ -131,6 +132,19 @@ class InMemoryScoutingReportRepository implements ScoutingReportRepository {
 
       return true;
     });
+  }
+
+  async delete(reportId: number): Promise<boolean> {
+    const reportIndex = this.reports.findIndex(
+      (candidate) => candidate.id === reportId,
+    );
+
+    if (reportIndex === -1) {
+      return false;
+    }
+
+    this.reports.splice(reportIndex, 1);
+    return true;
   }
 
   async updateMetadata(
@@ -290,6 +304,7 @@ test('create scouting report creates a draft by default', async (t) => {
     url: '/scouting-reports',
     payload: {
       opponentId: 7,
+      reportSource: 'scouting',
       reportDate: '2026-04-01',
     },
   });
@@ -299,6 +314,7 @@ test('create scouting report creates a draft by default', async (t) => {
     id: 1,
     opponentId: 7,
     versionNumber: 1,
+    reportSource: 'scouting',
     status: 'draft',
     reportDate: '2026-04-01',
     publishedAt: null,
@@ -316,6 +332,7 @@ test('duplicate report creates a new draft version', async (t) => {
           id: 5,
           opponentId: 3,
           versionNumber: 2,
+          reportSource: 'video_analysis',
           status: 'published',
           reportDate: new Date('2026-03-15T00:00:00.000Z'),
           publishedAt: new Date('2026-03-20T08:00:00.000Z'),
@@ -344,6 +361,7 @@ test('duplicate report creates a new draft version', async (t) => {
     id: 6,
     opponentId: 3,
     versionNumber: 3,
+    reportSource: 'video_analysis',
     status: 'draft',
     reportDate: '2026-03-15',
     publishedAt: null,
@@ -361,6 +379,7 @@ test('publish report is an explicit action that changes status', async (t) => {
           id: 9,
           opponentId: 4,
           versionNumber: 1,
+          reportSource: 'references',
           status: 'draft',
           reportDate: new Date('2026-04-02T00:00:00.000Z'),
           publishedAt: null,
@@ -398,6 +417,7 @@ test('publishing an already published report returns an explicit domain error', 
           id: 10,
           opponentId: 4,
           versionNumber: 1,
+          reportSource: 'references',
           status: 'published',
           reportDate: new Date('2026-04-02T00:00:00.000Z'),
           publishedAt: new Date('2026-04-05T10:00:00.000Z'),
@@ -437,6 +457,7 @@ test('published reports cannot be edited', async (t) => {
           id: 12,
           opponentId: 2,
           versionNumber: 1,
+          reportSource: 'scouting',
           status: 'published',
           reportDate: new Date('2026-04-02T00:00:00.000Z'),
           publishedAt: new Date('2026-04-05T10:00:00.000Z'),
@@ -479,6 +500,7 @@ test('published report can still be read', async (t) => {
           id: 15,
           opponentId: 9,
           versionNumber: 2,
+          reportSource: 'video_analysis',
           status: 'published',
           reportDate: new Date('2026-04-03T00:00:00.000Z'),
           publishedAt: new Date('2026-04-05T10:00:00.000Z'),
@@ -504,4 +526,47 @@ test('published report can still be read', async (t) => {
 
   assert.equal(response.statusCode, 200);
   assert.equal(response.json().status, 'published');
+});
+
+test('delete report removes an existing report', async (t) => {
+  const app = buildApp({
+    opponentRepository: new InMemoryOpponentRepository([]),
+    scoutingReportRepository: new InMemoryScoutingReportRepository(
+      [
+        {
+          id: 18,
+          opponentId: 6,
+          versionNumber: 1,
+          reportSource: 'scouting',
+          status: 'draft',
+          reportDate: new Date('2026-04-04T00:00:00.000Z'),
+          publishedAt: null,
+          createdAt: new Date('2026-04-04T09:00:00.000Z'),
+          updatedAt: new Date('2026-04-04T09:00:00.000Z'),
+        },
+      ],
+      [6],
+    ),
+    scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
+    scoutingReportFormRepository: new NoopScoutingReportFormRepository(),
+    scoutingReportTacticalAnalysisRepository:
+      new NoopScoutingReportTacticalAnalysisRepository(),
+    scoutingReportSwotRepository: new NoopScoutingReportSwotRepository(),
+  });
+
+  t.after(() => app.close());
+
+  const response = await app.inject({
+    method: 'DELETE',
+    url: '/scouting-reports/18',
+  });
+
+  assert.equal(response.statusCode, 204);
+
+  const fetchResponse = await app.inject({
+    method: 'GET',
+    url: '/scouting-reports/18',
+  });
+
+  assert.equal(fetchResponse.statusCode, 404);
 });

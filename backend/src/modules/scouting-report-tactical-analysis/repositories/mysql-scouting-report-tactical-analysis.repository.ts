@@ -11,6 +11,7 @@ import type {
   TacticalAnalysisItemRecord,
   TacticalAnalysisPhaseType,
 } from '../types/scouting-report-tactical-analysis.types.js';
+import type { PitchPlayerPosition } from '../../../shared/pitch/pitch-player-position.js';
 
 interface ReportRow extends DatabaseRow {
   id: number;
@@ -25,7 +26,9 @@ interface TacticalAnalysisRow extends DatabaseRow {
 
 interface TacticalAnalysisPayload {
   narrative: string;
+  setPieceType?: TacticalAnalysisBlockType | null;
   keyPoints?: string[];
+  playerPositions?: PitchPlayerPosition[];
 }
 
 export class MysqlScoutingReportTacticalAnalysisRepository implements ScoutingReportTacticalAnalysisRepository {
@@ -104,7 +107,7 @@ export class MysqlScoutingReportTacticalAnalysisRepository implements ScoutingRe
           [
             reportId,
             item.phaseType,
-            item.blockType,
+            item.phaseType === 'set_piece' ? null : item.blockType,
             serializeAnalysisText(item),
           ],
         );
@@ -127,9 +130,13 @@ function mapTacticalAnalysisRow(
 
   return {
     phaseType: row.phase,
-    blockType: row.block_type,
+    blockType:
+      row.phase === 'set_piece'
+        ? (payload.setPieceType ?? null)
+        : row.block_type,
     narrative: payload.narrative,
     keyPoints: payload.keyPoints ?? [],
+    playerPositions: payload.playerPositions ?? [],
   };
 }
 
@@ -138,8 +145,16 @@ function serializeAnalysisText(item: TacticalAnalysisItemRecord): string {
     narrative: item.narrative,
   };
 
+  if (item.phaseType === 'set_piece') {
+    payload.setPieceType = item.blockType;
+  }
+
   if (item.keyPoints.length > 0) {
     payload.keyPoints = item.keyPoints;
+  }
+
+  if (item.playerPositions.length > 0) {
+    payload.playerPositions = item.playerPositions;
   }
 
   return JSON.stringify(payload);
@@ -159,11 +174,27 @@ function parseAnalysisText(analysisText: string): TacticalAnalysisPayload {
             (keyPoint): keyPoint is string => typeof keyPoint === 'string',
           )
         : null;
+      const sanitizedPlayerPositions = Array.isArray(
+        parsedValue.playerPositions,
+      )
+        ? parsedValue.playerPositions.filter(isPitchPlayerPosition)
+        : null;
 
       return {
         narrative: parsedValue.narrative,
+        ...(parsedValue.setPieceType !== undefined
+          ? {
+              setPieceType:
+                typeof parsedValue.setPieceType === 'string'
+                  ? parsedValue.setPieceType
+                  : null,
+            }
+          : {}),
         ...(sanitizedKeyPoints !== null
           ? { keyPoints: sanitizedKeyPoints }
+          : {}),
+        ...(sanitizedPlayerPositions !== null
+          ? { playerPositions: sanitizedPlayerPositions }
           : {}),
       };
     }
@@ -171,11 +202,27 @@ function parseAnalysisText(analysisText: string): TacticalAnalysisPayload {
     return {
       narrative: analysisText,
       keyPoints: [],
+      playerPositions: [],
     };
   }
 
   return {
     narrative: analysisText,
     keyPoints: [],
+    playerPositions: [],
   };
+}
+
+function isPitchPlayerPosition(value: unknown): value is PitchPlayerPosition {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const candidate = value as Partial<PitchPlayerPosition>;
+
+  return (
+    typeof candidate.playerNumber === 'number' &&
+    typeof candidate.x === 'number' &&
+    typeof candidate.y === 'number'
+  );
 }

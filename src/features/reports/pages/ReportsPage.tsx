@@ -9,6 +9,7 @@ import {
   type ListScoutingReportsQueryDto,
   type ScoutingReportResponseDto,
   useCreateScoutingReportMutation,
+  useDeleteScoutingReportMutation,
   useDuplicateScoutingReportMutation,
   usePublishScoutingReportMutation,
   useScoutingReportsQuery,
@@ -30,17 +31,26 @@ export function ReportsPage(): JSX.Element {
     number | null
   >(null);
   const [activeMutationLabel, setActiveMutationLabel] = useState<
-    'duplicate' | 'publish' | null
+    'duplicate' | 'publish' | 'delete' | null
   >(null);
 
   const opponentsQuery = useOpponentsQuery();
   const reportsQuery = useScoutingReportsQuery(filters);
   const createScoutingReportMutation = useCreateScoutingReportMutation();
+  const deleteScoutingReportMutation = useDeleteScoutingReportMutation();
   const duplicateScoutingReportMutation = useDuplicateScoutingReportMutation();
   const publishScoutingReportMutation = usePublishScoutingReportMutation();
 
   const opponents = opponentsQuery.data?.items ?? [];
   const reports = reportsQuery.data?.items ?? [];
+  const reportsErrorMessage =
+    actionErrorMessage ??
+    (reportsQuery.error instanceof Error
+      ? getErrorMessage(
+          reportsQuery.error,
+          'No se pudieron cargar los informes.',
+        )
+      : null);
 
   async function handleCreateReport(
     values: CreateScoutingReportBodyDto,
@@ -112,6 +122,25 @@ export function ReportsPage(): JSX.Element {
     }
   }
 
+  async function handleDeleteReport(
+    report: ScoutingReportResponseDto,
+  ): Promise<void> {
+    setActionErrorMessage(null);
+    setActiveMutationReportId(report.id);
+    setActiveMutationLabel('delete');
+
+    try {
+      await deleteScoutingReportMutation.mutateAsync(report.id);
+    } catch (error) {
+      setActionErrorMessage(
+        getErrorMessage(error, 'No se pudo borrar el informe.'),
+      );
+    } finally {
+      setActiveMutationReportId(null);
+      setActiveMutationLabel(null);
+    }
+  }
+
   return (
     <section className="page">
       <PageHeader
@@ -134,10 +163,11 @@ export function ReportsPage(): JSX.Element {
           isLoading={reportsQuery.isLoading}
           activeMutationReportId={activeMutationReportId}
           activeMutationLabel={activeMutationLabel}
-          errorMessage={actionErrorMessage}
+          errorMessage={reportsErrorMessage}
           onOpenReport={handleOpenReport}
           onDuplicateReport={handleDuplicateReport}
           onPublishReport={handlePublishReport}
+          onDeleteReport={handleDeleteReport}
         />
 
         <ReportCreatePanel

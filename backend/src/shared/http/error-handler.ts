@@ -54,6 +54,7 @@ export function setErrorHandler(app: FastifyInstance): void {
       return;
     }
 
+    console.error(error);
     app.log.error(error);
     reply.status(500).send({
       message: 'Internal server error',

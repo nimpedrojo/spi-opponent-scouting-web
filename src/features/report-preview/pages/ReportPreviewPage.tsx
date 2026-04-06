@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 
 import { getScoutingReportStatusLabel } from '../../../shared/api/domain-types';
 import { PageHeader } from '../../../shared/ui/PageHeader';
+import { PitchPositionBoard } from '../../../shared/ui/PitchPositionBoard';
 import { SystemPitchDiagram } from '../../../shared/ui/SystemPitchDiagram';
 import { useOpponentQuery } from '../../opponents/api/opponentsApi';
 import { useScoutingReportQuery } from '../../reports/api/reportsApi';
@@ -139,7 +140,7 @@ export function ReportPreviewPage(): JSX.Element {
                 Analisis tactico
               </a>
               <a className="preview-toc__link" href="#preview-swot">
-                SWOT
+                DAFO
               </a>
               <a className="preview-toc__link" href="#preview-set-piece">
                 Balon parado
@@ -205,7 +206,7 @@ export function ReportPreviewPage(): JSX.Element {
                         Sistema principal
                       </span>
                       <strong>
-                        {systemsQuery.data.primarySystem ??
+                        {systemsQuery.data.primarySystem?.systemCode ??
                           'No hay sistema principal guardado.'}
                       </strong>
                     </article>
@@ -215,11 +216,9 @@ export function ReportPreviewPage(): JSX.Element {
                       </span>
                       {systemsQuery.data.alternateSystems.length > 0 ? (
                         <ul className="preview-list">
-                          {systemsQuery.data.alternateSystems.map(
-                            (systemCode) => (
-                              <li key={systemCode}>{systemCode}</li>
-                            ),
-                          )}
+                          {systemsQuery.data.alternateSystems.map((system) => (
+                            <li key={system.systemCode}>{system.systemCode}</li>
+                          ))}
                         </ul>
                       ) : (
                         <p>No hay sistemas alternativos guardados.</p>
@@ -231,18 +230,26 @@ export function ReportPreviewPage(): JSX.Element {
                     <SystemPitchDiagram
                       title="Sistema principal"
                       subtitle="Campograma"
-                      systemCode={systemsQuery.data.primarySystem}
+                      systemCode={
+                        systemsQuery.data.primarySystem?.systemCode ?? null
+                      }
+                      {...(systemsQuery.data.primarySystem?.playerPositions !==
+                      undefined
+                        ? {
+                            playerPositions:
+                              systemsQuery.data.primarySystem.playerPositions,
+                          }
+                        : {})}
                     />
-                    {systemsQuery.data.alternateSystems.map(
-                      (systemCode, index) => (
-                        <SystemPitchDiagram
-                          key={`${systemCode}-${index}`}
-                          title={`Alternativo ${index + 1}`}
-                          subtitle="Campograma"
-                          systemCode={systemCode}
-                        />
-                      ),
-                    )}
+                    {systemsQuery.data.alternateSystems.map((system, index) => (
+                      <SystemPitchDiagram
+                        key={`${system.systemCode}-${index}`}
+                        title={`Alternativo ${index + 1}`}
+                        subtitle="Campograma"
+                        systemCode={system.systemCode}
+                        playerPositions={system.playerPositions}
+                      />
+                    ))}
                   </div>
                 </div>
               ) : (
@@ -335,6 +342,15 @@ export function ReportPreviewPage(): JSX.Element {
                             </h3>
                           </div>
                         </div>
+                        {item.playerPositions.length > 0 ? (
+                          <div className="pitch-board pitch-board--set-piece">
+                            <PitchPositionBoard
+                              positions={item.playerPositions}
+                              variant="half"
+                              showPlayerNumbers={false}
+                            />
+                          </div>
+                        ) : null}
                         <p>{item.narrative}</p>
                         {item.keyPoints.length > 0 ? (
                           <>
@@ -364,7 +380,7 @@ export function ReportPreviewPage(): JSX.Element {
             <section id="preview-swot" className="panel preview-section">
               <div className="panel__header">
                 <div>
-                  <span className="page-header__eyebrow">SWOT</span>
+                  <span className="page-header__eyebrow">DAFO</span>
                   <h3>Revision agrupada por tipo</h3>
                 </div>
               </div>
@@ -389,7 +405,7 @@ export function ReportPreviewPage(): JSX.Element {
                   />
                 </div>
               ) : (
-                <p className="muted-text">Cargando SWOT...</p>
+                <p className="muted-text">Cargando DAFO...</p>
               )}
             </section>
           </div>
@@ -457,5 +473,15 @@ function getBlockTypeLabel(value: TacticalAnalysisBlockType): string {
       return 'Bloque medio';
     case 'low_block':
       return 'Bloque bajo';
+    case 'corner':
+      return 'Corner';
+    case 'wide_free_kick':
+      return 'Falta lateral';
+    case 'central_free_kick':
+      return 'Falta central';
+    case 'throw_in':
+      return 'Saque de banda';
+    case 'other':
+      return 'Otro';
   }
 }

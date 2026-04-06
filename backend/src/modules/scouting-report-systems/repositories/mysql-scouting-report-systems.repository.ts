@@ -11,6 +11,7 @@ import type {
   ScoutingReportSystemsReportRecord,
   SystemCatalogRecord,
 } from '../types/scouting-report-systems.types.js';
+import type { PitchPlayerPosition } from '../../../shared/pitch/pitch-player-position.js';
 
 interface ReportRow extends DatabaseRow {
   id: number;
@@ -30,6 +31,11 @@ interface SystemSelectionRow extends DatabaseRow {
   display_name: string;
   usage_role: 'primary' | 'secondary';
   display_order: number;
+  notes: string | null;
+}
+
+interface SystemSelectionNotesPayload {
+  playerPositions?: PitchPlayerPosition[];
 }
 
 export class MysqlScoutingReportSystemsRepository implements ScoutingReportSystemsRepository {
@@ -94,7 +100,8 @@ export class MysqlScoutingReportSystemsRepository implements ScoutingReportSyste
           sc.system_code,
           sc.display_name,
           osu.usage_role,
-          osu.display_order
+          osu.display_order,
+          osu.notes
         FROM opponent_system_usages osu
         INNER JOIN system_catalog sc
           ON sc.id = osu.system_catalog_id
@@ -116,6 +123,7 @@ export class MysqlScoutingReportSystemsRepository implements ScoutingReportSyste
       displayName: row.display_name,
       usageRole: row.usage_role,
       displayOrder: row.display_order,
+      playerPositions: parseSystemSelectionNotes(row.notes),
     }));
   }
 
@@ -137,15 +145,16 @@ export class MysqlScoutingReportSystemsRepository implements ScoutingReportSyste
         [reportId],
       );
 
+      const requestedSystems = [input.primarySystem, ...input.alternateSystems];
       const catalogSystems = await this.findCatalogSystemsWithConnection(
         connection,
-        [input.primarySystemCode, ...input.alternateSystemCodes],
+        requestedSystems.map((system) => system.systemCode),
       );
       const catalogByCode = new Map(
         catalogSystems.map((system) => [system.systemCode, system]),
       );
 
-      const primarySystem = catalogByCode.get(input.primarySystemCode);
+      const primarySystem = catalogByCode.get(input.primarySystem.systemCode);
 
       if (primarySystem === undefined) {
         throw new Error('Primary system catalog entry was not found');
@@ -157,14 +166,19 @@ export class MysqlScoutingReportSystemsRepository implements ScoutingReportSyste
             scouting_report_id,
             system_catalog_id,
             usage_role,
-            display_order
-          ) VALUES (?, ?, 'primary', 1)
+            display_order,
+            notes
+          ) VALUES (?, ?, 'primary', 1, ?)
         `,
-        [reportId, primarySystem.id],
+        [
+          reportId,
+          primarySystem.id,
+          serializeSystemSelectionNotes(input.primarySystem.playerPositions),
+        ],
       );
 
-      for (const [index, systemCode] of input.alternateSystemCodes.entries()) {
-        const alternateSystem = catalogByCode.get(systemCode);
+      for (const [index, system] of input.alternateSystems.entries()) {
+        const alternateSystem = catalogByCode.get(system.systemCode);
 
         if (alternateSystem === undefined) {
           throw new Error('Alternate system catalog entry was not found');
@@ -176,10 +190,16 @@ export class MysqlScoutingReportSystemsRepository implements ScoutingReportSyste
               scouting_report_id,
               system_catalog_id,
               usage_role,
-              display_order
-            ) VALUES (?, ?, 'secondary', ?)
+              display_order,
+              notes
+            ) VALUES (?, ?, 'secondary', ?, ?)
           `,
-          [reportId, alternateSystem.id, index + 1],
+          [
+            reportId,
+            alternateSystem.id,
+            index + 1,
+            serializeSystemSelectionNotes(system.playerPositions),
+          ],
         );
       }
 
@@ -228,4 +248,50 @@ function mapSystemCatalogRow(row: SystemCatalogRow): SystemCatalogRecord {
     displayOrder: row.display_order,
     isActive: row.is_active === 1,
   };
+}
+
+function serializeSystemSelectionNotes(
+  playerPositions: PitchPlayerPosition[],
+): string | null {
+  if (playerPositions.length === 0) {
+    return null;
+  }
+
+  return JSON.stringify({
+    playerPositions,
+  } satisfies SystemSelectionNotesPayload);
+}
+
+function parseSystemSelectionNotes(
+  notes: string | null,
+): PitchPlayerPosition[] {
+  if (notes === null) {
+    return [];
+  }
+
+  try {
+    const parsedValue = JSON.parse(notes) as SystemSelectionNotesPayload;
+
+    if (!Array.isArray(parsedValue.playerPositions)) {
+      return [];
+    }
+
+    return parsedValue.playerPositions.filter(isPitchPlayerPosition);
+  } catch {
+    return [];
+  }
+}
+
+function isPitchPlayerPosition(value: unknown): value is PitchPlayerPosition {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const candidate = value as Partial<PitchPlayerPosition>;
+
+  return (
+    typeof candidate.playerNumber === 'number' &&
+    typeof candidate.x === 'number' &&
+    typeof candidate.y === 'number'
+  );
 }

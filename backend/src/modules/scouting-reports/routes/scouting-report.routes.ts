@@ -89,5 +89,13 @@ export const scoutingReportRoutes: FastifyPluginCallback<
     scoutingReportController.publishReport.bind(scoutingReportController),
   );
 
+  fastify.delete<{ Params: ScoutingReportIdParamsDto }>(
+    '/:id',
+    {
+      preHandler: [validateRequestPart(scoutingReportIdParamsSchema, 'params')],
+    },
+    scoutingReportController.deleteReport.bind(scoutingReportController),
+  );
+
   done();
 };
