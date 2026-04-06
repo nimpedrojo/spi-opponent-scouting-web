@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import { buildApp } from '../../src/app.js';
 import type { OpponentRepository } from '../../src/modules/opponents/repositories/opponent.repository.js';
+import type { ScoutingReportSystemsRepository } from '../../src/modules/scouting-report-systems/repositories/scouting-report-systems.repository.js';
 import type {
   CreateOpponentInput,
   OpponentListFilters,
@@ -17,6 +18,12 @@ import type {
   ScoutingReportRecord,
   UpdateScoutingReportMetadataInput,
 } from '../../src/modules/scouting-reports/types/scouting-report.types.js';
+import type {
+  ReplaceScoutingReportSystemsInput,
+  ScoutingReportSystemSelectionRecord,
+  ScoutingReportSystemsReportRecord,
+  SystemCatalogRecord,
+} from '../../src/modules/scouting-report-systems/types/scouting-report-systems.types.js';
 
 class InMemoryOpponentRepository implements OpponentRepository {
   constructor(private readonly opponents: OpponentRecord[]) {}
@@ -162,10 +169,38 @@ class InMemoryScoutingReportRepository implements ScoutingReportRepository {
   }
 }
 
+class NoopScoutingReportSystemsRepository implements ScoutingReportSystemsRepository {
+  async findReportById(
+    _reportId: number,
+  ): Promise<ScoutingReportSystemsReportRecord | null> {
+    return null;
+  }
+
+  async findCatalogSystemsByCodes(
+    _systemCodes: string[],
+  ): Promise<SystemCatalogRecord[]> {
+    return [];
+  }
+
+  async getSystemsForReport(
+    _reportId: number,
+  ): Promise<ScoutingReportSystemSelectionRecord[]> {
+    return [];
+  }
+
+  async replaceSystemsForReport(
+    _reportId: number,
+    _input: ReplaceScoutingReportSystemsInput,
+  ): Promise<void> {
+    return;
+  }
+}
+
 test('create scouting report creates a draft by default', async (t) => {
   const app = buildApp({
     opponentRepository: new InMemoryOpponentRepository([]),
     scoutingReportRepository: new InMemoryScoutingReportRepository([], [7]),
+    scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
   });
 
   t.after(() => app.close());
@@ -210,6 +245,7 @@ test('duplicate report creates a new draft version', async (t) => {
       ],
       [3],
     ),
+    scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
   });
 
   t.after(() => app.close());
@@ -250,6 +286,7 @@ test('publish report is an explicit action that changes status', async (t) => {
       ],
       [4],
     ),
+    scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
   });
 
   t.after(() => app.close());
@@ -282,6 +319,7 @@ test('published reports cannot be edited', async (t) => {
       ],
       [2, 8],
     ),
+    scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
   });
 
   t.after(() => app.close());

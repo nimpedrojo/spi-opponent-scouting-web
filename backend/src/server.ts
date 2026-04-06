@@ -2,6 +2,7 @@ import mysql from 'mysql2/promise';
 
 import { buildApp } from './app.js';
 import { MysqlOpponentRepository } from './modules/opponents/repositories/mysql-opponent.repository.js';
+import { MysqlScoutingReportSystemsRepository } from './modules/scouting-report-systems/repositories/mysql-scouting-report-systems.repository.js';
 import { MysqlScoutingReportRepository } from './modules/scouting-reports/repositories/mysql-scouting-report.repository.js';
 
 async function startServer(): Promise<void> {
@@ -16,7 +17,13 @@ async function startServer(): Promise<void> {
 
   const opponentRepository = new MysqlOpponentRepository(pool);
   const scoutingReportRepository = new MysqlScoutingReportRepository(pool);
-  const app = buildApp({ opponentRepository, scoutingReportRepository });
+  const scoutingReportSystemsRepository =
+    new MysqlScoutingReportSystemsRepository(pool);
+  const app = buildApp({
+    opponentRepository,
+    scoutingReportRepository,
+    scoutingReportSystemsRepository,
+  });
 
   try {
     await app.listen({

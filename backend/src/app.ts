@@ -9,9 +9,16 @@ import {
   scoutingReportRoutes,
   type ScoutingReportRoutesOptions,
 } from './modules/scouting-reports/routes/scouting-report.routes.js';
+import {
+  scoutingReportSystemsRoutes,
+  type ScoutingReportSystemsRoutesOptions,
+} from './modules/scouting-report-systems/routes/scouting-report-systems.routes.js';
 
 export interface AppDependencies
-  extends OpponentRoutesOptions, ScoutingReportRoutesOptions {}
+  extends
+    OpponentRoutesOptions,
+    ScoutingReportRoutesOptions,
+    ScoutingReportSystemsRoutesOptions {}
 
 export function buildApp(dependencies: AppDependencies): FastifyInstance {
   const app = Fastify();
@@ -24,6 +31,11 @@ export function buildApp(dependencies: AppDependencies): FastifyInstance {
   app.register(scoutingReportRoutes, {
     prefix: '/scouting-reports',
     scoutingReportRepository: dependencies.scoutingReportRepository,
+  });
+  app.register(scoutingReportSystemsRoutes, {
+    prefix: '/scouting-reports',
+    scoutingReportSystemsRepository:
+      dependencies.scoutingReportSystemsRepository,
   });
 
   return app;

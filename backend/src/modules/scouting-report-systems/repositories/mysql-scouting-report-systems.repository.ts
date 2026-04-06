@@ -32,9 +32,7 @@ interface SystemSelectionRow extends DatabaseRow {
   display_order: number;
 }
 
-export class MysqlScoutingReportSystemsRepository
-  implements ScoutingReportSystemsRepository
-{
+export class MysqlScoutingReportSystemsRepository implements ScoutingReportSystemsRepository {
   constructor(private readonly databasePool: DatabasePool) {}
 
   async findReportById(

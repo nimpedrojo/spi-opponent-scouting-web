@@ -9,7 +9,9 @@ export interface ScoutingReportSystemsRepository {
   findReportById(
     reportId: number,
   ): Promise<ScoutingReportSystemsReportRecord | null>;
-  findCatalogSystemsByCodes(systemCodes: string[]): Promise<SystemCatalogRecord[]>;
+  findCatalogSystemsByCodes(
+    systemCodes: string[],
+  ): Promise<SystemCatalogRecord[]>;
   getSystemsForReport(
     reportId: number,
   ): Promise<ScoutingReportSystemSelectionRecord[]>;

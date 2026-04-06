@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import { buildApp } from '../../src/app.js';
 import type { OpponentRepository } from '../../src/modules/opponents/repositories/opponent.repository.js';
+import type { ScoutingReportSystemsRepository } from '../../src/modules/scouting-report-systems/repositories/scouting-report-systems.repository.js';
 import type { ScoutingReportRepository } from '../../src/modules/scouting-reports/repositories/scouting-report.repository.js';
 import type {
   CreateOpponentInput,
@@ -17,6 +18,12 @@ import type {
   ScoutingReportRecord,
   UpdateScoutingReportMetadataInput,
 } from '../../src/modules/scouting-reports/types/scouting-report.types.js';
+import type {
+  ReplaceScoutingReportSystemsInput,
+  ScoutingReportSystemSelectionRecord,
+  ScoutingReportSystemsReportRecord,
+  SystemCatalogRecord,
+} from '../../src/modules/scouting-report-systems/types/scouting-report-systems.types.js';
 
 interface OpponentReportFixture {
   season: number | null;
@@ -162,10 +169,38 @@ class NoopScoutingReportRepository implements ScoutingReportRepository {
   }
 }
 
+class NoopScoutingReportSystemsRepository implements ScoutingReportSystemsRepository {
+  async findReportById(
+    _reportId: number,
+  ): Promise<ScoutingReportSystemsReportRecord | null> {
+    return null;
+  }
+
+  async findCatalogSystemsByCodes(
+    _systemCodes: string[],
+  ): Promise<SystemCatalogRecord[]> {
+    return [];
+  }
+
+  async getSystemsForReport(
+    _reportId: number,
+  ): Promise<ScoutingReportSystemSelectionRecord[]> {
+    return [];
+  }
+
+  async replaceSystemsForReport(
+    _reportId: number,
+    _input: ReplaceScoutingReportSystemsInput,
+  ): Promise<void> {
+    return;
+  }
+}
+
 test('create opponent returns 201 and explicit response dto', async (t) => {
   const app = buildApp({
     opponentRepository: new InMemoryOpponentRepository(),
     scoutingReportRepository: new NoopScoutingReportRepository(),
+    scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
   });
 
   t.after(() => app.close());
@@ -195,6 +230,7 @@ test('create opponent returns 400 for invalid body', async (t) => {
   const app = buildApp({
     opponentRepository: new InMemoryOpponentRepository(),
     scoutingReportRepository: new NoopScoutingReportRepository(),
+    scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
   });
 
   t.after(() => app.close());
@@ -243,6 +279,7 @@ test('list opponents applies category, season, status, and search filters', asyn
       },
     ]),
     scoutingReportRepository: new NoopScoutingReportRepository(),
+    scoutingReportSystemsRepository: new NoopScoutingReportSystemsRepository(),
   });
 
   t.after(() => app.close());
