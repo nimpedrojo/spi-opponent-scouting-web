@@ -1,9 +1,14 @@
 import type { JSX } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import { PageHeader } from '../../../shared/ui/PageHeader';
 import { PlaceholderCard } from '../../../shared/ui/PlaceholderCard';
 
 export function ReportPreviewPage(): JSX.Element {
+  const [searchParams] = useSearchParams();
+  const reportId = searchParams.get('reportId');
+  const opponentId = searchParams.get('opponentId');
+
   return (
     <section className="page">
       <PageHeader
@@ -11,6 +16,17 @@ export function ReportPreviewPage(): JSX.Element {
         title="Report Preview"
         description="This route is ready for read-focused report review, export preparation, and published presentation modes."
       />
+
+      {reportId !== null ? (
+        <div className="status-strip">
+          <span className="status-pill status-pill--published">
+            Published report #{reportId}
+          </span>
+          {opponentId !== null ? (
+            <span className="status-pill">Opponent #{opponentId}</span>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="placeholder-grid">
         <PlaceholderCard

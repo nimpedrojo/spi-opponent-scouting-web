@@ -182,6 +182,11 @@ select {
   font-weight: 600;
 }
 
+.status-pill--published {
+  background: rgba(24, 72, 117, 0.12);
+  color: #184875;
+}
+
 .panel {
   padding: 1.25rem;
   border: 1px solid rgba(16, 35, 26, 0.08);
@@ -297,7 +302,24 @@ select {
   gap: 0.85rem;
 }
 
+.report-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
 .opponent-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(16, 35, 26, 0.08);
+  border-radius: 16px;
+  background: rgba(246, 248, 244, 0.8);
+}
+
+.report-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -315,11 +337,25 @@ select {
   min-width: 0;
 }
 
+.report-card__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
 .opponent-card__heading {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem;
+}
+
+.report-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
 .empty-state,
@@ -373,7 +409,16 @@ select {
     align-items: stretch;
   }
 
+  .report-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .panel__header {
+    flex-direction: column;
+  }
+
+  .report-card__header {
     flex-direction: column;
   }
 }
