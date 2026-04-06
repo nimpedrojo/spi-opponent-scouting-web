@@ -7,12 +7,18 @@ interface ReportEditorHeaderProps {
   report: ScoutingReportResponseDto | null;
   opponent: OpponentResponseDto | null;
   isLoading: boolean;
+  isDuplicating: boolean;
+  duplicateErrorMessage: string | null;
+  onDuplicateReport: () => Promise<void>;
 }
 
 export function ReportEditorHeader({
   report,
   opponent,
   isLoading,
+  isDuplicating,
+  duplicateErrorMessage,
+  onDuplicateReport,
 }: ReportEditorHeaderProps): JSX.Element {
   if (isLoading) {
     return (
@@ -43,26 +49,54 @@ export function ReportEditorHeader({
           <span className="page-header__eyebrow">Active Report</span>
           <h3>{opponent?.name ?? `Opponent #${report.opponentId}`}</h3>
           <p className="muted-text">
-            Section-based editing shell for scouting preparation.
+            {report.status === 'published'
+              ? 'This report is published and read-only. Duplicate it to continue editing in a new draft.'
+              : 'Section-based editing shell for scouting preparation.'}
           </p>
         </div>
 
-        <div className="status-strip">
-          <span
-            className={
-              report.status === 'published'
-                ? 'status-pill status-pill--published'
-                : 'status-pill'
-            }
-          >
-            {report.status}
-          </span>
-          <span className="status-pill">Version {report.versionNumber}</span>
-          <span className="status-pill">
-            Opponent: {opponent?.name ?? report.opponentId}
-          </span>
+        <div className="editor-header__actions">
+          <div className="status-strip">
+            <span
+              className={
+                report.status === 'published'
+                  ? 'status-pill status-pill--published'
+                  : 'status-pill'
+              }
+            >
+              {report.status}
+            </span>
+            <span className="status-pill">Version {report.versionNumber}</span>
+            <span className="status-pill">
+              Opponent: {opponent?.name ?? report.opponentId}
+            </span>
+          </div>
+
+          <div className="button-row">
+            <button
+              type="button"
+              className="button button--ghost"
+              disabled={isDuplicating}
+              onClick={() => void onDuplicateReport()}
+            >
+              {isDuplicating ? 'Duplicating...' : 'Duplicate to draft'}
+            </button>
+          </div>
         </div>
       </div>
+
+      {report.status === 'published' ? (
+        <p className="feedback-message feedback-message--info">
+          Editing is disabled for published reports. Review the content or
+          duplicate this report to create a new editable draft version.
+        </p>
+      ) : null}
+
+      {duplicateErrorMessage !== null ? (
+        <p className="feedback-message feedback-message--error">
+          {duplicateErrorMessage}
+        </p>
+      ) : null}
     </section>
   );
 }

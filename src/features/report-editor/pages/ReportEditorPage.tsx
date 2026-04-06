@@ -1,9 +1,13 @@
 import { useEffect, useMemo, useState, type JSX } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
+import { ApiError } from '../../../shared/api/api-client';
 import { PageHeader } from '../../../shared/ui/PageHeader';
 import { useOpponentQuery } from '../../opponents/api/opponentsApi';
-import { useScoutingReportQuery } from '../../reports/api/reportsApi';
+import {
+  useDuplicateScoutingReportMutation,
+  useScoutingReportQuery,
+} from '../../reports/api/reportsApi';
 import {
   getReportEditorSection,
   ReportEditorSidebar,
@@ -13,6 +17,7 @@ import { ReportEditorSectionPanel } from '../components/ReportEditorSectionPanel
 import { reportEditorSections } from '../components/report-editor-sections';
 
 export function ReportEditorPage(): JSX.Element {
+  const navigate = useNavigate();
   const defaultSection = reportEditorSections[0];
   const [searchParams] = useSearchParams();
   const reportId = Number(searchParams.get('reportId') ?? '0');
@@ -22,9 +27,13 @@ export function ReportEditorPage(): JSX.Element {
   const resolvedOpponentId = report?.opponentId ?? fallbackOpponentId;
   const opponentQuery = useOpponentQuery(resolvedOpponentId);
   const opponent = opponentQuery.data ?? null;
+  const duplicateScoutingReportMutation = useDuplicateScoutingReportMutation();
   const [activeSectionId, setActiveSectionId] = useState<string>(
     defaultSection?.id ?? 'form',
   );
+  const [duplicateErrorMessage, setDuplicateErrorMessage] = useState<
+    string | null
+  >(null);
 
   const activeSection = useMemo(
     () => getReportEditorSection(activeSectionId) ?? defaultSection,
@@ -43,6 +52,27 @@ export function ReportEditorPage(): JSX.Element {
     }
   }, [searchParams]);
 
+  async function handleDuplicateReport(): Promise<void> {
+    if (report === null) {
+      return;
+    }
+
+    setDuplicateErrorMessage(null);
+
+    try {
+      const duplicatedReport =
+        await duplicateScoutingReportMutation.mutateAsync(report.id);
+
+      void navigate(
+        `/report-editor?reportId=${duplicatedReport.id}&opponentId=${duplicatedReport.opponentId}`,
+      );
+    } catch (error) {
+      setDuplicateErrorMessage(
+        getErrorMessage(error, 'Unable to duplicate report.'),
+      );
+    }
+  }
+
   return (
     <section className="page">
       <PageHeader
@@ -55,6 +85,9 @@ export function ReportEditorPage(): JSX.Element {
         report={report}
         opponent={opponent}
         isLoading={reportQuery.isLoading || opponentQuery.isLoading}
+        isDuplicating={duplicateScoutingReportMutation.isPending}
+        duplicateErrorMessage={duplicateErrorMessage}
+        onDuplicateReport={handleDuplicateReport}
       />
 
       <div className="editor-layout">
@@ -62,6 +95,7 @@ export function ReportEditorPage(): JSX.Element {
           <>
             <ReportEditorSidebar
               activeSectionId={activeSection.id}
+              isReadOnly={report?.status === 'published'}
               onSelectSection={setActiveSectionId}
             />
 
@@ -76,4 +110,16 @@ export function ReportEditorPage(): JSX.Element {
       </div>
     </section>
   );
+}
+
+function getErrorMessage(error: unknown, fallbackMessage: string): string {
+  if (error instanceof ApiError) {
+    return error.message;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return fallbackMessage;
 }

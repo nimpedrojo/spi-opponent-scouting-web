@@ -7,11 +7,13 @@ import {
 
 interface ReportEditorSidebarProps {
   activeSectionId: string;
+  isReadOnly: boolean;
   onSelectSection: (sectionId: string) => void;
 }
 
 export function ReportEditorSidebar({
   activeSectionId,
+  isReadOnly,
   onSelectSection,
 }: ReportEditorSidebarProps): JSX.Element {
   return (
@@ -19,9 +21,15 @@ export function ReportEditorSidebar({
       <div className="panel__header">
         <div>
           <span className="page-header__eyebrow">Report Sections</span>
-          <h3>Editor workflow</h3>
+          <h3>{isReadOnly ? 'Read-only workflow' : 'Editor workflow'}</h3>
         </div>
       </div>
+
+      {isReadOnly ? (
+        <p className="muted-text">
+          Published reports stay read-only across all sections.
+        </p>
+      ) : null}
 
       <nav className="editor-sidebar__nav" aria-label="Report sections">
         {reportEditorSections.map((section) => (
